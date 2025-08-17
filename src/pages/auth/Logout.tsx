@@ -1,21 +1,23 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const Logout = () => {
-  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
-    // Simulate logout process
-    const timer = setTimeout(() => {
-      // Clear any auth tokens/data here
-      // For now, just redirect to home
-      navigate("/");
-    }, 2000);
+    // Perform logout
+    const performLogout = async () => {
+      try {
+        await logout();
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, [navigate]);
+    performLogout();
+  }, [logout]);
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">

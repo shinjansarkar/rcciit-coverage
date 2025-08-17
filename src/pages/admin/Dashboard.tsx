@@ -12,35 +12,39 @@ import {
   Settings,
   BarChart3
 } from "lucide-react";
+import { dashboardAPI } from "@/services/api";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-    totalPeriods: 3,
-    totalEvents: 45,
-    totalLinks: 234,
-    recentViews: 1250
+    totalPeriods: 0,
+    totalEvents: 0,
+    totalLinks: 0,
+    recentViews: 0
   });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const recentActivity = [
-    {
-      id: 1,
-      type: "event_created",
-      title: "New event 'Tech Symposium 2024' created",
-      timestamp: "2 hours ago"
-    },
-    {
-      id: 2,
-      type: "link_added",
-      title: "5 new links added to 'Cultural Fest 2024'",
-      timestamp: "4 hours ago"
-    },
-    {
-      id: 3,
-      type: "period_updated",
-      title: "Academic Year 2024-25 period updated",
-      timestamp: "1 day ago"
-    }
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [statsData, activityData] = await Promise.all([
+          dashboardAPI.getStats(),
+          dashboardAPI.getRecentActivity()
+        ]);
+        setStats(statsData);
+        setRecentActivity(activityData);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const quickActions = [
     {

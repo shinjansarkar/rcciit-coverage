@@ -1,72 +1,157 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, ExternalLink, FolderOpen, Image, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Edit, Trash2, ExternalLink, Link, Loader2, Copy, Check } from "lucide-react";
+import { linksAPI, eventsAPI } from "@/services/api";
+import { ResourceLink, Event } from "@/lib/supabase";
+import { toast } from "sonner";
+
+interface LinkWithEvent extends ResourceLink {
+  events: { title: string };
+}
 
 const ManageLinks = () => {
-  const [links, setLinks] = useState([
-    {
-      id: "link-1",
-      title: "Day 1 - Opening Ceremony Photos",
-      description: "High-resolution photos from the grand opening ceremony",
-      url: "https://drive.google.com/drive/folders/1ABC123...",
-      type: "photos",
-      fileCount: 45,
-      size: "127 MB",
-      eventTitle: "Annual Cultural Fest 2024"
-    },
-    {
-      id: "link-2",
-      title: "Day 2 - Cultural Performances", 
-      description: "Photos and videos from dance and music competitions",
-      url: "https://drive.google.com/drive/folders/1DEF456...",
-      type: "mixed",
-      fileCount: 89,
-      size: "234 MB",
-      eventTitle: "Annual Cultural Fest 2024"
-    },
-    {
-      id: "link-3",
-      title: "Technical Paper Presentations",
-      description: "PDF documents and presentation slides from the symposium",
-      url: "https://drive.google.com/drive/folders/1GHI789...",
-      type: "documents",
-      fileCount: 15,
-      size: "45 MB",
-      eventTitle: "Tech Symposium 2024"
-    }
-  ]);
+  const [links, setLinks] = useState<LinkWithEvent[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<ResourceLink | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    url: "",
+    event_id: ""
+  });
 
-  const getTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "photos":
-        return <Image className="w-5 h-5" />;
-      case "documents":
-        return <FolderOpen className="w-5 h-5" />;
-      case "mixed":
-        return <Download className="w-5 h-5" />;
-      default:
-        return <ExternalLink className="w-5 h-5" />;
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [linksData, eventsData] = await Promise.all([
+        linksAPI.getAll(),
+        eventsAPI.getAll()
+      ]);
+      setLinks(linksData);
+      setEvents(eventsData);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+      toast.error('Failed to load links and events');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "photos":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "documents":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "mixed":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      url: "",
+      event_id: ""
+    });
+    setEditingLink(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title || !formData.url || !formData.event_id) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(formData.url);
+    } catch {
+      toast.error('Please enter a valid URL');
+      return;
+    }
+
+    try {
+      if (editingLink) {
+        await linksAPI.update(editingLink.id, formData);
+        toast.success('Link updated successfully');
+      } else {
+        await linksAPI.create(formData);
+        toast.success('Link created successfully');
+      }
+      
+      setIsDialogOpen(false);
+      resetForm();
+      fetchData();
+    } catch (error: any) {
+      console.error('Failed to save link:', error);
+      toast.error(error.message || 'Failed to save link');
     }
   };
 
-  const handleLinkClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handleDelete = async (linkId: string) => {
+    try {
+      await linksAPI.delete(linkId);
+      toast.success('Link deleted successfully');
+      fetchData();
+    } catch (error: any) {
+      console.error('Failed to delete link:', error);
+      toast.error(error.message || 'Failed to delete link');
+    }
   };
+
+  const handleEdit = (link: ResourceLink) => {
+    setEditingLink(link);
+    setFormData({
+      title: link.title,
+      url: link.url,
+      event_id: link.event_id
+    });
+    setIsDialogOpen(true);
+  };
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedUrl(url);
+      toast.success('URL copied to clipboard');
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (error) {
+      toast.error('Failed to copy URL');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getDomainFromUrl = (url: string) => {
+    try {
+      const domain = new URL(url).hostname;
+      return domain.replace('www.', '');
+    } catch {
+      return 'Invalid URL';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading links...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -75,13 +160,79 @@ const ManageLinks = () => {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Manage Resource Links</h1>
           <p className="text-muted-foreground">
-            Add and manage Google Drive links for event resources
+            Create and manage resource links for events
           </p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Link
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => resetForm()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Link
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingLink ? 'Edit Link' : 'Create New Link'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingLink ? 'Update link details below.' : 'Fill in the details to create a new resource link.'}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Link Title *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter link title"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="url">URL *</Label>
+                <Input
+                  id="url"
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                  placeholder="https://example.com"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="event">Associated Event *</Label>
+                <Select
+                  value={formData.event_id}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, event_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an event" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {events.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        {event.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {editingLink ? 'Update Link' : 'Create Link'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Links List */}
@@ -92,35 +243,49 @@ const ManageLinks = () => {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(link.type)}
-                      <CardTitle className="text-xl text-foreground">
-                        {link.title}
-                      </CardTitle>
-                    </div>
+                    <CardTitle className="text-xl text-foreground">
+                      {link.title}
+                    </CardTitle>
                     <Badge 
-                      className={getTypeColor(link.type)}
+                      className="bg-blue-100 text-blue-800 border-blue-200"
                       variant="outline"
                     >
-                      {link.type}
+                      Resource
                     </Badge>
                   </div>
                   
-                  <CardDescription className="text-sm leading-relaxed">
-                    {link.description}
-                  </CardDescription>
-                  
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <span>{link.fileCount} files</span>
-                    <span>•</span>
-                    <span>{link.size}</span>
-                    <div className="text-xs px-2 py-1 bg-muted rounded-md">
-                      {link.eventTitle}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Link className="w-4 h-4 text-muted-foreground" />
+                    <a 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-sm"
+                    >
+                      {getDomainFromUrl(link.url)}
+                    </a>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(link.url)}
+                      className="h-6 w-6 p-0"
+                    >
+                      {copiedUrl === link.url ? (
+                        <Check className="w-3 h-3 text-green-600" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                    </Button>
                   </div>
                   
-                  <div className="text-xs text-muted-foreground font-mono bg-muted/30 p-2 rounded">
-                    {link.url}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Event: {link.events?.title || 'Unknown Event'}</span>
+                    </div>
+                    <div className="text-xs px-2 py-1 bg-muted rounded-md">
+                      Added {formatDate(link.created_at)}
+                    </div>
                   </div>
                 </div>
                 
@@ -128,19 +293,41 @@ const ManageLinks = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleLinkClick(link.url)}
+                    onClick={() => window.open(link.url, '_blank')}
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    Open
+                    Visit
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(link)}>
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the link
+                          "{link.title}".
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(link.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
@@ -152,14 +339,14 @@ const ManageLinks = () => {
       {links.length === 0 && (
         <Card className="border-0 shadow-card">
           <CardContent className="p-12 text-center">
-            <ExternalLink className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <Link className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
               No resource links found
             </h3>
             <p className="text-muted-foreground mb-6">
-              Add your first Google Drive link to start sharing resources.
+              Create your first resource link to start sharing content.
             </p>
-            <Button>
+            <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add First Link
             </Button>

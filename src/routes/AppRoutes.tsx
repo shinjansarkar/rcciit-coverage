@@ -10,8 +10,9 @@ import ManageEvents from "@/pages/admin/ManageEvents";
 import ManageLinks from "@/pages/admin/ManageLinks";
 import Login from "@/pages/auth/Login";
 import Logout from "@/pages/auth/Logout";
-import AdminGuard from "@/context/AdminGuard";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
+import TestUI from "@/pages/TestUI";
 
 const AppRoutes = () => {
   return (
@@ -26,12 +27,15 @@ const AppRoutes = () => {
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />
+      
+      {/* Test Route */}
+      <Route path="/test-ui" element={<TestUI />} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
-        <AdminGuard>
+        <ProtectedRoute requireAdmin={true}>
           <AdminLayout />
-        </AdminGuard>
+        </ProtectedRoute>
       }>
         <Route index element={<Dashboard />} />
         <Route path="periods" element={<ManagePeriods />} />
