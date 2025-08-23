@@ -4,64 +4,100 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, FolderOpen, ArrowRight, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from '../../lib/supabase';
 
 // Mock data - replace with actual Supabase data
-const mockTimePeriods = [
-  {
-    id: "2024-1",
-    title: "Academic Year 2024-25",
-    description: "Current academic year events and resources",
-    eventCount: 12,
-    startDate: "2024-06-01",
-    endDate: "2025-05-31",
-    status: "active",
-    coverImage: "/api/placeholder/400/240"
-  },
-  {
-    id: "2023-2",
-    title: "Academic Year 2023-24", 
-    description: "Previous academic year archives",
-    eventCount: 18,
-    startDate: "2023-06-01",
-    endDate: "2024-05-31",
-    status: "archived",
-    coverImage: "/api/placeholder/400/240"
-  },
-  {
-    id: "2023-1",
-    title: "Academic Year 2022-23",
-    description: "Historical events and documentation",
-    eventCount: 15,
-    startDate: "2022-06-01", 
-    endDate: "2023-05-31",
-    status: "archived",
-    coverImage: "/api/placeholder/400/240"
-  }
-];
+// const mockTimePeriods = [
+//   {
+//     id: "2024-1",
+//     title: "Academic Year 2024-25",
+//     description: "Current academic year events and resources",
+//     eventCount: 12,
+//     startDate: "2024-06-01",
+//     endDate: "2025-05-31",
+//     status: "active",
+//     coverImage: "/api/placeholder/400/240"
+//   },
+//   {
+//     id: "2023-2",
+//     title: "Academic Year 2023-24", 
+//     description: "Previous academic year archives",
+//     eventCount: 18,
+//     startDate: "2023-06-01",
+//     endDate: "2024-05-31",
+//     status: "archived",
+//     coverImage: "/api/placeholder/400/240"
+//   },
+//   {
+//     id: "2023-1",
+//     title: "Academic Year 2022-23",
+//     description: "Historical events and documentation",
+//     eventCount: 15,
+//     startDate: "2022-06-01", 
+//     endDate: "2023-05-31",
+//     status: "archived",
+//     coverImage: "/api/placeholder/400/240"
+//   }
+// ];
 
 const Home = () => {
-  const [timePeriods, setTimePeriods] = useState(mockTimePeriods);
+  const [timePeriods, setTimePeriods] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+  const fetchPeriods = async () => {
+    setIsLoading(true);
 
-    return () => clearTimeout(timer);
-  }, []);
+    // Fetch periods + related events (for event count)
+    const { data, error } = await supabase
+      .from("periods")
+      .select(`
+        id,
+        name,
+        start_date,
+        end_date,
+        is_active,
+        events:events!period_id (
+          id,
+          title,
+          description,
+          created_at
+        )
+      `)
+      .order("start_date", { ascending: false });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-success text-success-foreground";
-      case "archived":
-        return "bg-muted text-muted-foreground";
-      default:
-        return "bg-secondary text-secondary-foreground";
+
+    if (error) {
+      console.error("Error fetching periods:", error);
+      setTimePeriods([]);
+    } else {
+      // Map DB fields -> frontend expected fields
+      const mapped = data.map((p: any) => ({
+        id: p.id,
+        title: p.name, // map "name" -> "title"
+        description: "", // no column in DB, keep empty for now
+        startDate: p.start_date,
+        endDate: p.end_date,
+        status: p.is_active ? "active" : "archived",
+        eventCount: p.events ? p.events.length : 0, // count related events
+      }));
+
+      setTimePeriods(mapped);
     }
+
+    setIsLoading(false);
   };
+
+  fetchPeriods();
+}, []);
+
+
+  const getStatusColor = (isActive: boolean) => {
+    return isActive
+      ? "bg-success text-success-foreground"
+      : "bg-muted text-muted-foreground";
+  };
+
 
   const formatDateRange = (startDate: string, endDate: string) => {
     const start = new Date(startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });

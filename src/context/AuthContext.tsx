@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@/lib/supabase'
-import { authAPI } from '@/services/api'
+import { Session, User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 
 interface AuthContextType {
@@ -9,15 +9,14 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   isAuthenticated: boolean
+  role: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }
 
@@ -27,32 +26,67 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [role, setRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check if user is already authenticated on app load
-    const checkAuth = async () => {
+    const initAuth = async () => {
       try {
-        const currentUser = await authAPI.getCurrentUser()
-        setUser(currentUser)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setUser(session.user)
+          await fetchUserRole(session.user)
+        }
       } catch (error) {
-        console.error('Auth check failed:', error)
-        setUser(null)
+        console.error('Auth init failed:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    checkAuth()
+    initAuth()
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          setUser(session.user)
+          await fetchUserRole(session.user)
+        } else {
+          setUser(null)
+          setRole(null)
+        }
+      }
+    )
+
+    return () => listener.subscription.unsubscribe()
   }, [])
+
+  const fetchUserRole = async (user: User) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching role:', error.message)
+      setRole(null)
+    } else {
+      setRole(data.role)
+    }
+  }
 
   const login = async (email: string, password: string) => {
     try {
       setLoading(true)
-      const { profile } = await authAPI.login(email, password)
-      setUser(profile)
-      navigate('/admin')
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      if (data.user) {
+        setUser(data.user)
+        await fetchUserRole(data.user)
+        navigate('/admin')
+      }
     } catch (error) {
       console.error('Login failed:', error)
       throw error
@@ -64,8 +98,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true)
-      await authAPI.logout()
+      await supabase.auth.signOut()
       setUser(null)
+      setRole(null)
       navigate('/login')
     } catch (error) {
       console.error('Logout failed:', error)
@@ -80,7 +115,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     login,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    role
   }
 
   return (
@@ -89,3 +125,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   )
 }
+
+export default AuthContext;

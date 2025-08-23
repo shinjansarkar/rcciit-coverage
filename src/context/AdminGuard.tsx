@@ -1,21 +1,23 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 interface AdminGuardProps {
   children: ReactNode;
 }
 
 const AdminGuard = ({ children }: AdminGuardProps) => {
-  // In a real app, check if user is authenticated and has admin privileges
-  // For now, we'll allow access for demo purposes
-  const isAuthenticated = true; // Replace with actual auth check
-  const isAdmin = true; // Replace with actual admin check
+  const { isAuthenticated, role, loading } = useAuth();
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Checking authentication...</div>;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAdmin) {
+  if (role !== "admin") {
     return <Navigate to="/" replace />;
   }
 

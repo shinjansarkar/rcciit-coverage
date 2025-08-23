@@ -4,71 +4,89 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, ExternalLink, Download, FolderOpen, Image, Eye } from "lucide-react";
+import { supabase } from '../../lib/supabase';
 
 // Mock data - replace with actual Supabase data
-const mockEventDetail = {
-  id: "event-1",
-  title: "Annual Cultural Fest 2024",
-  description: "Three-day cultural extravaganza featuring music, dance, and theatrical performances from March 15-17, 2024.",
-  date: "2024-03-15",
-  category: "Cultural",
-  coverImage: "/api/placeholder/600/300",
-  links: [
-    {
-      id: "link-1",
-      title: "Day 1 - Opening Ceremony Photos",
-      description: "High-resolution photos from the grand opening ceremony",
-      url: "https://drive.google.com/drive/folders/1ABC123...",
-      type: "photos",
-      fileCount: 45,
-      size: "127 MB"
-    },
-    {
-      id: "link-2", 
-      title: "Day 2 - Cultural Performances",
-      description: "Photos and videos from dance and music competitions",
-      url: "https://drive.google.com/drive/folders/1DEF456...",
-      type: "mixed",
-      fileCount: 89,
-      size: "234 MB"
-    },
-    {
-      id: "link-3",
-      title: "Day 3 - Prize Distribution",
-      description: "Award ceremony and closing event documentation",
-      url: "https://drive.google.com/drive/folders/1GHI789...",
-      type: "photos",
-      fileCount: 32,
-      size: "98 MB"
-    },
-    {
-      id: "link-4",
-      title: "Event Brochure & Schedule",
-      description: "Official program schedule and promotional materials",
-      url: "https://drive.google.com/drive/folders/1JKL012...",
-      type: "documents",
-      fileCount: 8,
-      size: "15 MB"
-    }
-  ]
-};
+// const mockEventDetail = {
+//   id: "event-1",
+//   title: "Annual Cultural Fest 2024",
+//   description: "Three-day cultural extravaganza featuring music, dance, and theatrical performances from March 15-17, 2024.",
+//   date: "2024-03-15",
+//   category: "Cultural",
+//   coverImage: "/api/placeholder/600/300",
+//   links: [
+//     {
+//       id: "link-1",
+//       title: "Day 1 - Opening Ceremony Photos",
+//       description: "High-resolution photos from the grand opening ceremony",
+//       url: "https://drive.google.com/drive/folders/1ABC123...",
+//       type: "photos",
+//       fileCount: 45,
+//       size: "127 MB"
+//     },
+//     {
+//       id: "link-2", 
+//       title: "Day 2 - Cultural Performances",
+//       description: "Photos and videos from dance and music competitions",
+//       url: "https://drive.google.com/drive/folders/1DEF456...",
+//       type: "mixed",
+//       fileCount: 89,
+//       size: "234 MB"
+//     },
+//     {
+//       id: "link-3",
+//       title: "Day 3 - Prize Distribution",
+//       description: "Award ceremony and closing event documentation",
+//       url: "https://drive.google.com/drive/folders/1GHI789...",
+//       type: "photos",
+//       fileCount: 32,
+//       size: "98 MB"
+//     },
+//     {
+//       id: "link-4",
+//       title: "Event Brochure & Schedule",
+//       description: "Official program schedule and promotional materials",
+//       url: "https://drive.google.com/drive/folders/1JKL012...",
+//       type: "documents",
+//       fileCount: 8,
+//       size: "15 MB"
+//     }
+//   ]
+// };
 
 const EventDetail = () => {
   const { eventId } = useParams();
-  const [eventDetail, setEventDetail] = useState(mockEventDetail);
+  const [eventDetail, setEventDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
+    const fetchEventDetail = async () => {
+      setIsLoading(true);
 
-    return () => clearTimeout(timer);
+      const { data, error } = await supabase
+        .from("events")
+        .select("*, resource_links(*)")
+        .eq("id", eventId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching event detail:", error);
+        setEventDetail(null);
+      } else if (data) {
+        const links = data.resource_links ?? [];
+        // Add event_count for total files
+        const totalFiles = links.reduce((acc: number, link: any) => acc + (link.fileCount ?? 0), 0);
+        setEventDetail({ ...data, links, event_count: totalFiles });
+      }
+
+      setIsLoading(false);
+    };
+
+    if (eventId) fetchEventDetail();
   }, [eventId]);
 
   const getTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
+    switch (type?.toLowerCase()) {
       case "photos":
         return <Image className="w-5 h-5" />;
       case "documents":
@@ -81,7 +99,7 @@ const EventDetail = () => {
   };
 
   const getTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
+    switch (type?.toLowerCase()) {
       case "photos":
         return "bg-green-100 text-green-800 border-green-200";
       case "documents":
@@ -94,16 +112,17 @@ const EventDetail = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const handleLinkClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(url, "_blank", "noopener,noreferrer");
   };
+
 
   if (isLoading) {
     return (
