@@ -4,58 +4,87 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, ExternalLink, FolderOpen, Image, Users } from "lucide-react";
+import { supabase } from '../../lib/supabase';
 
 // Mock data - replace with actual Supabase data
-const mockEvents = [
-  {
-    id: "event-1",
-    title: "Annual Cultural Fest 2024",
-    description: "Three-day cultural extravaganza featuring music, dance, and theatrical performances",
-    date: "2024-03-15",
-    linkCount: 8,
-    category: "Cultural",
-    coverImage: "/api/placeholder/300/200"
-  },
-  {
-    id: "event-2", 
-    title: "Tech Symposium 2024",
-    description: "Technical paper presentations and project showcases by students",
-    date: "2024-02-20",
-    linkCount: 5,
-    category: "Technical",
-    coverImage: "/api/placeholder/300/200"
-  },
-  {
-    id: "event-3",
-    title: "Fresher's Welcome 2024",
-    description: "Welcoming ceremony for new students with orientation and fun activities",
-    date: "2024-08-10",
-    linkCount: 12,
-    category: "Orientation",
-    coverImage: "/api/placeholder/300/200"
-  }
-];
+// const mockEvents = [
+//   {
+//     id: "event-1",
+//     title: "Annual Cultural Fest 2024",
+//     description: "Three-day cultural extravaganza featuring music, dance, and theatrical performances",
+//     date: "2024-03-15",
+//     linkCount: 8,
+//     category: "Cultural",
+//     coverImage: "/api/placeholder/300/200"
+//   },
+//   {
+//     id: "event-2", 
+//     title: "Tech Symposium 2024",
+//     description: "Technical paper presentations and project showcases by students",
+//     date: "2024-02-20",
+//     linkCount: 5,
+//     category: "Technical",
+//     coverImage: "/api/placeholder/300/200"
+//   },
+//   {
+//     id: "event-3",
+//     title: "Fresher's Welcome 2024",
+//     description: "Welcoming ceremony for new students with orientation and fun activities",
+//     date: "2024-08-10",
+//     linkCount: 12,
+//     category: "Orientation",
+//     coverImage: "/api/placeholder/300/200"
+//   }
+// ];
 
 const EventsList = () => {
   const { periodId } = useParams();
-  const [events, setEvents] = useState(mockEvents);
+  const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [periodInfo, setPeriodInfo] = useState({
-    title: "Academic Year 2024-25",
-    description: "Current academic year events and resources"
-  });
+  const [periodInfo, setPeriodInfo] = useState<any | null>(null);
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
+    const fetchEventsAndPeriod = async () => {
+      setIsLoading(true);
 
-    return () => clearTimeout(timer);
+      // Fetch events for this period
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("period_id", periodId)
+        .order("created_at", { ascending: false });
+
+      if (eventsError) {
+        console.error("Error fetching events:", eventsError);
+        setEvents([]);
+      } else {
+        setEvents(eventsData ?? []);
+      }
+
+      // Fetch period info
+      const { data: periodData, error: periodError } = await supabase
+        .from("periods")
+        .select("*")
+        .eq("id", periodId)
+        .single();
+
+      if (periodError) {
+        console.error("Error fetching period:", periodError);
+        setPeriodInfo(null);
+      } else {
+        setPeriodInfo(periodData);
+      }
+
+      setIsLoading(false);
+    };
+
+    if (periodId) {
+      fetchEventsAndPeriod();
+    }
   }, [periodId]);
 
   const getCategoryColor = (category: string) => {
-    switch (category.toLowerCase()) {
+    switch (category?.toLowerCase()) {
       case "cultural":
         return "bg-purple-100 text-purple-800 border-purple-200";
       case "technical":
@@ -67,13 +96,14 @@ const EventsList = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+  function formatDate(dateString: string) {
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
-  };
+  }
+
 
   if (isLoading) {
     return (

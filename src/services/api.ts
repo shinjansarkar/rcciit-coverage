@@ -261,44 +261,37 @@ export const dashboardAPI = {
     const [
       { count: periodsCount },
       { count: eventsCount },
-      { count: linksCount }
+      { count: linksCount },
+      { count: viewsCount }
     ] = await Promise.all([
       supabase.from('periods').select('*', { count: 'exact', head: true }),
       supabase.from('events').select('*', { count: 'exact', head: true }),
-      supabase.from('resource_links').select('*', { count: 'exact', head: true })
+      supabase.from('resource_links').select('*', { count: 'exact', head: true }),
+      supabase.from('views').select('*', { count: 'exact', head: true }) // optional table if you track views
     ])
 
     return {
       totalPeriods: periodsCount || 0,
       totalEvents: eventsCount || 0,
       totalLinks: linksCount || 0,
-      recentViews: 1250 // Mock data for now
+      recentViews: viewsCount || 0 // replaces the mock `1250`
     }
   },
 
   // Get recent activity
   async getRecentActivity() {
-    // This would typically come from an activity log table
-    // For now, returning mock data
-    return [
-      {
-        id: 1,
-        type: "event_created",
-        title: "New event 'Tech Symposium 2024' created",
-        timestamp: "2 hours ago"
-      },
-      {
-        id: 2,
-        type: "link_added",
-        title: "5 new links added to 'Cultural Fest 2024'",
-        timestamp: "4 hours ago"
-      },
-      {
-        id: 3,
-        type: "period_updated",
-        title: "Academic Year 2024-25 period updated",
-        timestamp: "1 day ago"
-      }
-    ]
+    // If you have an `activity_log` table:
+    const { data, error } = await supabase
+      .from('activity_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (error) {
+      console.error('Failed to fetch activity log:', error)
+      return []
+    }
+
+    return data
   }
 }
