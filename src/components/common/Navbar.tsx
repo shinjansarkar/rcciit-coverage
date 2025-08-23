@@ -19,7 +19,7 @@ const Navbar = () => {
               <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">RCCIIT Coverage</h1>
+              <h1 className="text-xl font-bold text-foreground">Rcciit Coverage Team</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Event Resources Portal</p>
             </div>
           </Link>

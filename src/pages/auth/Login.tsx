@@ -49,7 +49,7 @@ const Login = () => {
               <GraduationCap className="w-7 h-7 text-primary-foreground" />
             </div>
             <div className="text-left">
-              <h1 className="text-2xl font-bold text-primary-foreground">RCCIIT Coverage</h1>
+              <h1 className="text-2xl font-bold text-primary-foreground">Rcciit Coverage Team</h1>
               <p className="text-sm text-primary-foreground/80">Admin Portal</p>
             </div>
           </Link>
@@ -145,7 +145,7 @@ const Login = () => {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-sm text-primary-foreground/60">
-            © {new Date().getFullYear()} RCCIIT Coverage. All rights reserved.
+            © {new Date().getFullYear()} Rcciit Coverage Team. All rights reserved.
           </p>
         </div>
       </div>

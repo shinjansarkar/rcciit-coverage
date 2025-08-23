@@ -18,7 +18,7 @@ const AdminNavbar = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Admin Panel</h2>
-          <p className="text-sm text-muted-foreground">RCCIIT Coverage Management</p>
+          <p className="text-sm text-muted-foreground">Rcciit Coverage Team Management</p>
         </div>
 
         <div className="flex items-center space-x-4">

@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold text-foreground">RCCIIT Coverage</span>
+                              <span className="text-lg font-bold text-foreground">Rcciit Coverage Team</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm">
               Your central hub for accessing event resources, photos, and documents from 
@@ -68,7 +68,7 @@ const Footer = () => {
         <div className="mt-8 pt-6 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} RCCIIT Coverage. All rights reserved.
+              © {new Date().getFullYear()} Rcciit Coverage Team. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground">
               Built with ❤️ for the RCCIIT community

@@ -84,7 +84,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
           <p className="text-muted-foreground">
-            Manage events, resources, and time periods for RCCIIT Coverage
+            Manage events, resources, and time periods for Rcciit Coverage Team
           </p>
         </div>
         <Button asChild>

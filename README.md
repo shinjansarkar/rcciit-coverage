@@ -1,6 +1,6 @@
-# RCCIIT Coverage - Admin Panel & CRUD Application
+# Rcciit Coverage Team - Admin Panel & CRUD Application
 
-A comprehensive admin panel and CRUD application for managing events, time periods, and resource links for RCCIIT Coverage. Built with React, TypeScript, and Supabase for authentication and database management.
+A comprehensive admin panel and CRUD application for managing events, time periods, and resource links for Rcciit Coverage Team. Built with React, TypeScript, and Supabase for authentication and database management.
 
 ## Features
 
