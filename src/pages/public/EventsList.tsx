@@ -96,13 +96,10 @@ const EventsList = () => {
     }
   };
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
+  const formatDate = (dateString: string) => {
+    const newDate = new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return `${newDate}`;
+  };
 
 
   if (isLoading) {
@@ -197,7 +194,7 @@ const EventsList = () => {
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    <span>{formatDate(event.date)}</span>
+                    <span>{formatDate(event.updated_at)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <ExternalLink className="w-4 h-4" />

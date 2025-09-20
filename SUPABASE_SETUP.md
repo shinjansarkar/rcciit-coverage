@@ -160,6 +160,30 @@ CREATE POLICY "Admin can manage resource links" ON public.resource_links
   );
 ```
 
+### Public Users Table
+```sql
+-- Create a table for public users
+CREATE TABLE users (
+  id UUID REFERENCES auth.users(id) PRIMARY KEY,
+  role TEXT DEFAULT 'user'
+);
+
+-- Function to add new users to the public users table
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, role)
+  VALUES (new.id, 'user');
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function when a new user signs up
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+```
+
 ## 5. Set Up Authentication
 
 1. Go to Authentication > Settings in your Supabase dashboard
