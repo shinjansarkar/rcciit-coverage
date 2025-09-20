@@ -8,8 +8,8 @@ import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
-const Login = () => {
-  const { login } = useAuth();
+const Signup = () => {
+  const { signup } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,11 +22,11 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      toast.success("Login successful!");
+      await signup(formData.email, formData.password);
+      toast.success("Signup successful! Please check your email to verify your account.");
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error(error.message || "Login failed. Please check your credentials.");
+      console.error("Signup error:", error);
+      toast.error(error.message || "Signup failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -50,17 +50,17 @@ const Login = () => {
             </div>
             <div className="text-left">
               <h1 className="text-2xl font-bold text-primary-foreground">Rcciit Coverage Team</h1>
-              <p className="text-sm text-primary-foreground/80">Admin Portal</p>
+              <p className="text-sm text-primary-foreground/80">User Signup</p>
             </div>
           </Link>
         </div>
 
-        {/* Login Form */}
+        {/* Signup Form */}
         <Card className="border-0 shadow-2xl backdrop-blur bg-card/95">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Create an Account</CardTitle>
             <CardDescription>
-              Sign in to your admin account to manage events and resources
+              Sign up to access event resources
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -71,7 +71,7 @@ const Login = () => {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="admin@rcciit.org"
+                  placeholder="user@rcciit.org"
                   value={formData.email}
                   onChange={handleInputChange}
                   required
@@ -85,7 +85,7 @@ const Login = () => {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     value={formData.password}
                     onChange={handleInputChange}
                     required
@@ -106,21 +106,6 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <Link 
-                  to="/forgot-password" 
-                  className="text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-                <Link 
-                  to="/signup" 
-                  className="text-primary hover:underline"
-                >
-                  Sign up
-                </Link>
-              </div>
-
               <Button 
                 type="submit" 
                 className="w-full bg-gradient-primary hover:shadow-card-hover transition-all duration-300"
@@ -129,19 +114,19 @@ const Login = () => {
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                    <span>Signing in...</span>
+                    <span>Signing up...</span>
                   </div>
                 ) : (
-                  "Sign In"
+                  "Sign Up"
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Need access?{" "}
-                <Link to="/" className="text-primary hover:underline">
-                  Contact administrator
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary hover:underline">
+                  Sign in
                 </Link>
               </p>
             </div>
@@ -159,4 +144,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

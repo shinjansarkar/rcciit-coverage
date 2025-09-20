@@ -10,6 +10,7 @@ import ManageEvents from "@/pages/admin/ManageEvents";
 import ManageLinks from "@/pages/admin/ManageLinks";
 import Login from "@/pages/auth/Login";
 import Logout from "@/pages/auth/Logout";
+import Signup from "@/pages/auth/Signup";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
 import TestUI from "@/pages/TestUI";
@@ -27,6 +28,7 @@ const AppRoutes = () => {
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />
+      <Route path="/signup" element={<Signup />} />
       
       {/* Test Route */}
       <Route path="/test-ui" element={<TestUI />} />

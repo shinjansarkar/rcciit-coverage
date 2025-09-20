@@ -112,11 +112,8 @@ const EventDetail = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    const newDate = new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return `${newDate}`;
   };
 
   const handleLinkClick = (url: string) => {
@@ -189,7 +186,7 @@ const EventDetail = () => {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                <span>{formatDate(eventDetail.date)}</span>
+                <span>{formatDate(eventDetail.created_at)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <ExternalLink className="w-4 h-4" />

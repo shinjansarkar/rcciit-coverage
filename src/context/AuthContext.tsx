@@ -4,12 +4,12 @@ import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 
 interface AuthContextType {
-  user: User | null
+  user: (User & { role: string | null }) | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  signup: (email: string, password: string) => Promise<void>
   isAuthenticated: boolean
-  role: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -25,8 +25,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [role, setRole] = useState<string | null>(null)
+  const [user, setUser] = useState<(User & { role: string | null }) | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
@@ -35,8 +34,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
-          setUser(session.user)
-          await fetchUserRole(session.user)
+          const userWithRole = await fetchUserRole(session.user)
+          setUser(userWithRole)
         }
       } catch (error) {
         console.error('Auth init failed:', error)
@@ -50,11 +49,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          setUser(session.user)
-          await fetchUserRole(session.user)
+          const userWithRole = await fetchUserRole(session.user)
+          setUser(userWithRole)
         } else {
           setUser(null)
-          setRole(null)
         }
       }
     )
@@ -71,9 +69,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (error) {
       console.error('Error fetching role:', error.message)
-      setRole(null)
+      return { ...user, role: null }
     } else {
-      setRole(data.role)
+      return { ...user, role: data.role }
     }
   }
 
@@ -83,9 +81,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       if (data.user) {
-        setUser(data.user)
-        await fetchUserRole(data.user)
-        navigate('/admin')
+        const userWithRole = await fetchUserRole(data.user)
+        setUser(userWithRole)
+        if (userWithRole.role === 'admin') {
+          navigate('/admin')
+        } else {
+          navigate('/')
+        }
       }
     } catch (error) {
       console.error('Login failed:', error)
@@ -100,10 +102,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true)
       await supabase.auth.signOut()
       setUser(null)
-      setRole(null)
       navigate('/login')
     } catch (error) {
       console.error('Logout failed:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signup = async (email: string, password: string) => {
+    try {
+      setLoading(true)
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) throw error
+    } catch (error) {
+      console.error('Signup failed:', error)
       throw error
     } finally {
       setLoading(false)
@@ -115,8 +129,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     login,
     logout,
+    signup,
     isAuthenticated: !!user,
-    role
   }
 
   return (
