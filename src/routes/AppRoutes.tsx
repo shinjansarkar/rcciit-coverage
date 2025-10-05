@@ -18,34 +18,31 @@ import TestUI from "@/pages/TestUI";
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* --- Public & Auth Routes (remain the same) --- */}
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<Home />} />
         <Route path="events/:periodId" element={<EventsList />} />
         <Route path="event/:eventId" element={<EventDetail />} />
       </Route>
-
-      {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/signup" element={<Signup />} />
-      
-      {/* Test Route */}
-      <Route path="/test-ui" element={<TestUI />} />
 
-      {/* Admin Routes */}
-      <Route path="/admin" element={
-        <ProtectedRoute requireAdmin={true}>
-          <AdminLayout />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Dashboard />} />
-        <Route path="periods" element={<ManagePeriods />} />
-        <Route path="events" element={<ManageEvents />} />
-        <Route path="links" element={<ManageLinks />} />
+      {/* --- Cleaner Admin Routes Structure --- */}
+      <Route 
+        element={
+          <ProtectedRoute requireAdmin={true} />
+        }
+      >
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="periods" element={<ManagePeriods />} />
+          <Route path="events" element={<ManageEvents />} />
+          <Route path="links" element={<ManageLinks />} />
+        </Route>
       </Route>
 
-      {/* 404 Route */}
+      {/* --- Other routes --- */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

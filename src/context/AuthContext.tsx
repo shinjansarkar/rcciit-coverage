@@ -26,39 +26,28 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<(User & { role: string | null }) | null>(null)
+  // Start with loading as true
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          const userWithRole = await fetchUserRole(session.user)
-          setUser(userWithRole)
-        }
-      } catch (error) {
-        console.error('Auth init failed:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    initAuth()
-
+    // onAuthStateChange handles the initial session check AND any subsequent changes.
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          const userWithRole = await fetchUserRole(session.user)
-          setUser(userWithRole)
+          const userWithRole = await fetchUserRole(session.user);
+          setUser(userWithRole);
         } else {
-          setUser(null)
+          setUser(null);
         }
+        // The auth state is now determined, so we can stop loading.
+        setLoading(false);
       }
-    )
+    );
 
-    return () => listener.subscription.unsubscribe()
-  }, [])
+    // Cleanup the listener when the component unmounts
+    return () => listener.subscription.unsubscribe();
+  }, []) // The empty dependency array ensures this runs only once on mount
 
   const fetchUserRole = async (user: User) => {
     const { data, error } = await supabase
@@ -80,9 +69,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true)
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
+      // Note: The onAuthStateChange listener will automatically handle setting the user state.
+      // You can still navigate based on role here if you want immediate redirection.
       if (data.user) {
         const userWithRole = await fetchUserRole(data.user)
-        setUser(userWithRole)
         if (userWithRole.role === 'admin') {
           navigate('/admin')
         } else {

@@ -2,29 +2,21 @@ import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+// You no longer need useNavigate here, as the context handles it.
 
 const Logout = () => {
   const { logout } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Perform logout
-    const performLogout = async () => {
-      try {
-        await logout();
-        // Clear localStorage and cookies
-        localStorage.clear();
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        // Redirect to public home page
-        navigate("/");
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    };
-
-    performLogout();
-  }, [logout, navigate]);
+    // The logout function from the context handles everything:
+    // 1. Calling Supabase's signOut()
+    // 2. Clearing the user state
+    // 3. Navigating to the login page
+    logout().catch(error => {
+      // It's good practice to catch potential errors here too
+      console.error('Logout failed from component:', error);
+    });
+  }, [logout]); // Dependency array is correct
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
