@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ import { supabase } from '../../lib/supabase';
 
 const EventDetail = () => {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const [eventDetail, setEventDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -152,11 +153,9 @@ const EventDetail = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Button variant="ghost" asChild className="mb-6">
-          <Link to={`/events/2024-1`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Link>
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to events
         </Button>
 
         {/* Event Header */}

@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true)
       await supabase.auth.signOut()
       setUser(null)
-      navigate('/login')
+      navigate('/')
     } catch (error) {
       console.error('Logout failed:', error)
       throw error

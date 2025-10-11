@@ -34,14 +34,7 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/admin"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location.pathname.startsWith("/admin") ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              Admin
-            </Link>
+
             <Button variant="outline" size="sm" asChild>
               <Link to="/login">Login</Link>
             </Button>
