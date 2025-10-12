@@ -72,17 +72,6 @@ const Navbar = () => {
                 Home
               </Link>
               <Link
-                to="/admin"
-                className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  location.pathname.startsWith("/admin")
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Admin
-              </Link>
-              <Link
                 to="/login"
                 className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}

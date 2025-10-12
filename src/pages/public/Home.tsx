@@ -267,10 +267,10 @@ const Home = () => {
               Contact our admin team to request access to specific events or time periods
             </p>
             <Button size="lg" asChild>
-              <Link to="/admin">
+              <a href="mailto:coverage.rcciit.official@gmail.com">
                 Contact Admin
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
+              </a>
             </Button>
           </div>
         </div>

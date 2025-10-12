@@ -275,9 +275,9 @@ const EventDetail = () => {
             If you notice any missing files or have additional resources to add, please contact our admin team.
           </p>
           <Button asChild>
-            <Link to="/admin">
+            <a href="mailto:coverage.rcciit.official@gmail.com">
               Contact Admin
-            </Link>
+            </a>
           </Button>
         </div>
       </div>

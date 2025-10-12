@@ -106,20 +106,7 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <Link 
-                  to="/forgot-password" 
-                  className="text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-                <Link 
-                  to="/signup" 
-                  className="text-primary hover:underline"
-                >
-                  Sign up
-                </Link>
-              </div>
+
 
               <Button 
                 type="submit" 
@@ -140,9 +127,9 @@ const Login = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Need access?{" "}
-                <Link to="/" className="text-primary hover:underline">
+                <a href="mailto:coverage.rcciit.official@gmail.com" className="text-primary hover:underline">
                   Contact administrator
-                </Link>
+                </a>
               </p>
             </div>
           </CardContent>
