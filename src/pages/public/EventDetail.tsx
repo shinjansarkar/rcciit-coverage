@@ -160,9 +160,9 @@ const EventDetail = () => {
   }) : null;
 
   const breadcrumbData = createBreadcrumbStructuredData([
-    { name: "Home", url: "https://coverage.rcciit.org/" },
-    { name: "Events", url: "https://coverage.rcciit.org/events" },
-    { name: eventDetail?.title || "Event", url: `https://coverage.rcciit.org/event/${eventId}` }
+    { name: "Home", url: "https://rcciit-coverage.vercel.app/" },
+    { name: "Events", url: "https://rcciit-coverage.vercel.app/events" },
+    { name: eventDetail?.title || "Event", url: `https://rcciit-coverage.vercel.app/event/${eventId}` }
   ]);
 
   return (

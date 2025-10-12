@@ -1,5 +1,5 @@
 # Robots.txt for RCCIIT Coverage Team
-# https://coverage.rcciit.org/robots.txt
+# https://rcciit-coverage.vercel.app/robots.txt
 
 User-agent: *
 Allow: /
@@ -11,7 +11,7 @@ Disallow: /.env*
 Disallow: /src/
 
 # Sitemap location
-Sitemap: https://coverage.rcciit.org/sitemap.xml
+Sitemap: https://rcciit-coverage.vercel.app/sitemap.xml
 
 # Crawl delay (optional - be respectful to crawlers)
 Crawl-delay: 1

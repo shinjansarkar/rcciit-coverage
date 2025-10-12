@@ -148,8 +148,8 @@ const Home = () => {
   const websiteStructuredData = createWebsiteStructuredData();
   const organizationData = createOrganizationStructuredData({
     name: "RCCIIT Coverage Team",
-    url: "https://coverage.rcciit.org",
-    logo: "https://coverage.rcciit.org/logo.jpg",
+    url: "https://rcciit-coverage.vercel.app",
+    logo: "https://rcciit-coverage.vercel.app/logo.jpg",
     description: "Official documentation and resource portal for RCCIIT events",
     email: "coverage.rcciit.official@gmail.com"
   });

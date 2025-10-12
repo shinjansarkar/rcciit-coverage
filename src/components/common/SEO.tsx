@@ -16,8 +16,8 @@ interface SEOProps {
 
 const DEFAULT_TITLE = 'RCCIIT Coverage Team - Event Documentation & Resource Portal';
 const DEFAULT_DESCRIPTION = 'Official documentation and resource portal for RCCIIT events. Access photos, videos, and resources from academic events, cultural festivals, and institutional activities.';
-const DEFAULT_IMAGE = 'https://coverage.rcciit.org/og-image.jpg';
-const SITE_URL = 'https://coverage.rcciit.org';
+const DEFAULT_IMAGE = 'https://rcciit-coverage.vercel.app/og-image.jpg';
+const SITE_URL = 'https://rcciit-coverage.vercel.app';
 
 export const SEO: React.FC<SEOProps> = ({
   title,

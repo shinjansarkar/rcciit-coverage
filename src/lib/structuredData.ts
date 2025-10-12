@@ -58,11 +58,11 @@ export const createWebsiteStructuredData = () => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "RCCIIT Coverage Team",
-  "url": "https://coverage.rcciit.org",
+  "url": "https://rcciit-coverage.vercel.app",
   "description": "Official documentation and resource portal for RCCIIT events",
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://coverage.rcciit.org/search?q={search_term_string}",
+    "target": "https://rcciit-coverage.vercel.app/search?q={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 });

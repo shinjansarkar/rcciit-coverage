@@ -7,7 +7,7 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://coverage.rcciit.org/</loc>
+    <loc>https://rcciit-coverage.vercel.app/</loc>
     <lastmod>2025-10-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -15,7 +15,7 @@
   
   <!-- Events List Pages -->
   <url>
-    <loc>https://coverage.rcciit.org/events</loc>
+    <loc>https://rcciit-coverage.vercel.app/events</loc>
     <lastmod>2025-10-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -23,21 +23,21 @@
   
   <!-- Time Period Pages -->
   <url>
-    <loc>https://coverage.rcciit.org/events/2024-1</loc>
+    <loc>https://rcciit-coverage.vercel.app/events/2024-1</loc>
     <lastmod>2025-10-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://coverage.rcciit.org/events/2023-2</loc>
+    <loc>https://rcciit-coverage.vercel.app/events/2023-2</loc>
     <lastmod>2024-05-31</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://coverage.rcciit.org/events/2023-1</loc>
+    <loc>https://rcciit-coverage.vercel.app/events/2023-1</loc>
     <lastmod>2023-05-31</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
@@ -45,7 +45,7 @@
   
   <!-- Login page (low priority) -->
   <url>
-    <loc>https://coverage.rcciit.org/login</loc>
+    <loc>https://rcciit-coverage.vercel.app/login</loc>
     <lastmod>2025-10-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
