@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, ExternalLink, Download, FolderOpen, Image, Eye } from "lucide-react";
 import { supabase } from '../../lib/supabase';
+import SEO from '@/components/common/SEO';
+import { createEventStructuredData, createBreadcrumbStructuredData } from '@/lib/structuredData';
 
 // Mock data - replace with actual Supabase data
 // const mockEventDetail = {
@@ -149,8 +151,35 @@ const EventDetail = () => {
     );
   }
 
+  const eventStructuredData = eventDetail ? createEventStructuredData({
+    id: eventDetail.id,
+    title: eventDetail.title,
+    description: eventDetail.description,
+    date: eventDetail.event_date,
+    coverImage: eventDetail.cover_image
+  }) : null;
+
+  const breadcrumbData = createBreadcrumbStructuredData([
+    { name: "Home", url: "https://coverage.rcciit.org/" },
+    { name: "Events", url: "https://coverage.rcciit.org/events" },
+    { name: eventDetail?.title || "Event", url: `https://coverage.rcciit.org/event/${eventId}` }
+  ]);
+
   return (
     <div className="min-h-screen bg-background">
+      {eventDetail && (
+        <SEO
+          title={eventDetail.title}
+          description={eventDetail.description || `Comprehensive documentation and resources for ${eventDetail.title}. View photos, videos, and related materials from this RCCIIT event.`}
+          keywords={`${eventDetail.title}, RCCIIT event, ${eventDetail.category || 'college event'}, event documentation, photos, videos`}
+          url={`/event/${eventId}`}
+          type="event"
+          image={eventDetail.cover_image}
+          publishedTime={eventDetail.event_date}
+          structuredData={[eventStructuredData, breadcrumbData]}
+        />
+      )}
+      
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">

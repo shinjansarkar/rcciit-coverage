@@ -1,3 +1,22 @@
+# Robots.txt for RCCIIT Coverage Team
+# https://coverage.rcciit.org/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /signup
+Disallow: /.env*
+Disallow: /src/
+
+# Sitemap location
+Sitemap: https://coverage.rcciit.org/sitemap.xml
+
+# Crawl delay (optional - be respectful to crawlers)
+Crawl-delay: 1
+
+# Specific rules for major search engines
 User-agent: Googlebot
 Allow: /
 

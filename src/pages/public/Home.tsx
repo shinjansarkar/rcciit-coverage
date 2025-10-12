@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Users, FolderOpen, ArrowRight, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from '../../lib/supabase';
+import SEO from '@/components/common/SEO';
+import { createWebsiteStructuredData, createOrganizationStructuredData } from '@/lib/structuredData';
 
 // Mock data - replace with actual Supabase data
 // const mockTimePeriods = [
@@ -143,8 +145,25 @@ const Home = () => {
     );
   }
 
+  const websiteStructuredData = createWebsiteStructuredData();
+  const organizationData = createOrganizationStructuredData({
+    name: "RCCIIT Coverage Team",
+    url: "https://coverage.rcciit.org",
+    logo: "https://coverage.rcciit.org/logo.jpg",
+    description: "Official documentation and resource portal for RCCIIT events",
+    email: "coverage.rcciit.official@gmail.com"
+  });
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Event Documentation & Resource Portal"
+        description="Access comprehensive documentation, photos, videos, and resources from RCCIIT events. Browse by academic year to find cultural festivals, seminars, workshops, and institutional activities."
+        keywords="RCCIIT events, college documentation, event photos, cultural festival, academic events, RCCIIT coverage, institutional activities, student events"
+        url="/"
+        structuredData={[websiteStructuredData, organizationData]}
+      />
+      
       {/* Hero Section */}
       <section className="bg-gradient-hero text-primary-foreground py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>

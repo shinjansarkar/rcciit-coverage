@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import SEO from '@/components/common/SEO';
 
 const Login = () => {
   const { login } = useAuth();
@@ -41,6 +42,13 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+      <SEO
+        title="Admin Login"
+        description="Admin login portal for RCCIIT Coverage Team. Access administrative features to manage events, resources, and documentation."
+        url="/login"
+        noIndex={true}
+      />
+      
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
