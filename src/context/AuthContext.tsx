@@ -35,6 +35,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initializeAuth = async () => {
       try {
         setLoading(true);
+        
+        // Quick check if there's any auth data in localStorage
+        const authKeys = Object.keys(localStorage).filter(key => 
+          key.startsWith('sb-') && key.includes('auth-token')
+        );
+        
+        // If no auth keys, don't bother checking session
+        if (authKeys.length === 0) {
+          console.log('No auth tokens found, skipping session recovery');
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -92,29 +106,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => listener.subscription.unsubscribe();
   }, []) // The empty dependency array ensures this runs only once on mount
 
-  const fetchUserRole = async (user: User) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+  const fetchUserRole = async (user: User): Promise<User & { role: string | null }> => {
+    // Set a timeout to prevent infinite hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout fetching user role')), 10000); // 10 second timeout
+    });
+    
+    const fetchPromise = (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle() // Use maybeSingle() instead of single() to handle missing records
 
-      if (error) {
-        // Check for JWT/auth errors
-        if (error.message?.includes('JWT') || error.code === 'PGRST301') {
-          console.error('Auth token invalid, clearing session...');
-          await supabase.auth.signOut();
-          throw new Error('Session expired. Please login again.');
+        if (error) {
+          // Check for JWT/auth errors
+          if (error.message?.includes('JWT') || error.code === 'PGRST301') {
+            console.error('Auth token invalid, clearing session...');
+            await supabase.auth.signOut();
+            setUser(null);
+            setLoading(false);
+            throw new Error('Session expired. Please login again.');
+          }
+          console.error('Error fetching role:', error.message);
+          console.warn('User exists in auth.users but not in public.users. Assigning default role.');
+          return { ...user, role: 'user' };
         }
-        console.error('Error fetching role:', error.message)
-        return { ...user, role: null }
+        
+        // If user doesn't exist in public.users table
+        if (!data) {
+          console.warn('User not found in public.users table. Creating entry...');
+          // Try to insert the user into public.users
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert({ 
+              id: user.id, 
+              email: user.email || '', 
+              role: 'user' 
+            });
+          
+          if (insertError) {
+            console.error('Failed to create user entry:', insertError.message);
+          }
+          
+          return { ...user, role: 'user' };
+        }
+        
+        return { ...user, role: data.role || 'user' };
+      } catch (err: any) {
+        console.error('Failed to fetch user role:', err);
+        // Don't throw - return user with default role to prevent infinite loop
+        return { ...user, role: 'user' };
       }
-      
-      return { ...user, role: data.role }
-    } catch (err) {
-      console.error('Failed to fetch user role:', err);
-      return { ...user, role: null }
+    })();
+    
+    try {
+      return await Promise.race([fetchPromise, timeoutPromise]);
+    } catch (err: any) {
+      console.error('Timeout or error fetching role:', err.message);
+      return { ...user, role: 'user' };
     }
   }
 

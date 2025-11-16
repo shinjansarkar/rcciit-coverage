@@ -280,18 +280,22 @@ export const dashboardAPI = {
 
   // Get recent activity
   async getRecentActivity() {
-    // If you have an `activity_log` table:
-    const { data, error } = await supabase
-      .from('activity_log')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5)
+    try {
+      // Try to fetch from activity_log table if it exists
+      const { data, error } = await supabase
+        .from('activity_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
 
-    if (error) {
-      console.error('Failed to fetch activity log:', error)
-      return []
+      if (error) {
+        // Table doesn't exist yet - return empty array silently
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      return [];
     }
-
-    return data
   }
 }

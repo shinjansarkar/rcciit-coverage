@@ -48,46 +48,51 @@ const Home = () => {
 
   useEffect(() => {
   const fetchPeriods = async () => {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    // Fetch periods + related events (for event count)
-    const { data, error } = await supabase
-      .from("periods")
-      .select(`
-        id,
-        name,
-        start_date,
-        end_date,
-        is_active,
-        events:events!period_id (
+      // Fetch periods + related events (for event count)
+      const { data, error } = await supabase
+        .from("periods")
+        .select(`
           id,
-          title,
-          description,
-          created_at
-        )
-      `)
-      .order("start_date", { ascending: false });
+          name,
+          start_date,
+          end_date,
+          is_active,
+          events:events!period_id (
+            id,
+            title,
+            description,
+            created_at
+          )
+        `)
+        .order("start_date", { ascending: false });
 
 
-    if (error) {
-      console.error("Error fetching periods:", error);
+      if (error) {
+        console.error("Error fetching periods:", error);
+        setTimePeriods([]);
+      } else {
+        // Map DB fields -> frontend expected fields
+        const mapped = (data || []).map((p: any) => ({
+          id: p.id,
+          title: p.name, // map "name" -> "title"
+          description: "", // no column in DB, keep empty for now
+          startDate: p.start_date,
+          endDate: p.end_date,
+          status: p.is_active ? "active" : "archived",
+          eventCount: p.events ? p.events.length : 0, // count related events
+        }));
+
+        setTimePeriods(mapped);
+      }
+    } catch (err) {
+      console.error("Error in fetchPeriods:", err);
       setTimePeriods([]);
-    } else {
-      // Map DB fields -> frontend expected fields
-      const mapped = data.map((p: any) => ({
-        id: p.id,
-        title: p.name, // map "name" -> "title"
-        description: "", // no column in DB, keep empty for now
-        startDate: p.start_date,
-        endDate: p.end_date,
-        status: p.is_active ? "active" : "archived",
-        eventCount: p.events ? p.events.length : 0, // count related events
-      }));
-
-      setTimePeriods(mapped);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   fetchPeriods();
@@ -222,7 +227,21 @@ const Home = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {timePeriods.map((period) => (
+            {timePeriods.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground mb-2">No Time Periods Available</h3>
+                <p className="text-muted-foreground mb-6">
+                  There are currently no time periods to display. Check back later or contact the admin.
+                </p>
+                <Button asChild>
+                  <a href="mailto:coverage.rcciit.official@gmail.com">
+                    Contact Admin
+                  </a>
+                </Button>
+              </div>
+            ) : (
+              timePeriods.map((period) => (
               <Card 
                 key={period.id} 
                 className="group hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-card"
@@ -268,8 +287,9 @@ const Home = () => {
                     </Link>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>
