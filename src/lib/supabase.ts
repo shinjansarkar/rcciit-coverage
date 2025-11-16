@@ -8,7 +8,16 @@ if (import.meta.env.PROD && (!import.meta.env.VITE_SUPABASE_URL || !import.meta.
   console.warn('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    // Optional: Increase token refresh buffer (default is 10 seconds before expiry)
+    // refreshTokenRotationEnabled: true,
+    storage: window.localStorage,
+  },
+})
 
 // Database types
 export interface User {

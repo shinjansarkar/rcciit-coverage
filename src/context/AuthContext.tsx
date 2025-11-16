@@ -31,16 +31,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // onAuthStateChange handles the initial session check AND any subsequent changes.
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+    // Check for existing session on mount
+    const initializeAuth = async () => {
+      try {
+        setLoading(true);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session recovery error:', error.message);
+          // Clear invalid session data
+          await supabase.auth.signOut();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         if (session?.user) {
           const userWithRole = await fetchUserRole(session.user);
           setUser(userWithRole);
         } else {
           setUser(null);
         }
-        // The auth state is now determined, so we can stop loading.
+        setLoading(false);
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+        setUser(null);
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // onAuthStateChange handles any subsequent changes
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
+        
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed successfully');
+        }
+        
+        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        if (session?.user) {
+          const userWithRole = await fetchUserRole(session.user);
+          setUser(userWithRole);
+        } else {
+          setUser(null);
+        }
+        
         setLoading(false);
       }
     );
@@ -50,17 +93,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []) // The empty dependency array ensures this runs only once on mount
 
   const fetchUserRole = async (user: User) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
 
-    if (error) {
-      console.error('Error fetching role:', error.message)
-      return { ...user, role: null }
-    } else {
+      if (error) {
+        // Check for JWT/auth errors
+        if (error.message?.includes('JWT') || error.code === 'PGRST301') {
+          console.error('Auth token invalid, clearing session...');
+          await supabase.auth.signOut();
+          throw new Error('Session expired. Please login again.');
+        }
+        console.error('Error fetching role:', error.message)
+        return { ...user, role: null }
+      }
+      
       return { ...user, role: data.role }
+    } catch (err) {
+      console.error('Failed to fetch user role:', err);
+      return { ...user, role: null }
     }
   }
 
@@ -90,12 +144,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true)
-      await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Logout error:', error)
+      }
+      // Force clear user state and localStorage
       setUser(null)
+      // Clear any remaining auth tokens from localStorage
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.startsWith('sb-') || key.includes('supabase')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
       navigate('/')
     } catch (error) {
       console.error('Logout failed:', error)
-      throw error
+      // Even if logout fails, clear local state
+      setUser(null)
+      navigate('/')
     } finally {
       setLoading(false)
     }
