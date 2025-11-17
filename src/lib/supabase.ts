@@ -13,11 +13,48 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    // Optional: Increase token refresh buffer (default is 10 seconds before expiry)
-    // refreshTokenRotationEnabled: true,
     storage: window.localStorage,
+    // Add custom storage with auto-cleanup
+    storageKey: `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`,
   },
 })
+
+// Auto-cleanup invalid sessions on page load
+const cleanupInvalidSessions = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
+      // Clear invalid tokens
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.startsWith('sb-') || key.includes('supabase')
+      );
+      if (keysToRemove.length > 0) {
+        console.log('Cleaning up invalid session data');
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      }
+      return;
+    }
+    
+    // Check if session is expired
+    const expiresAt = session.expires_at;
+    const now = Math.floor(Date.now() / 1000);
+    
+    if (expiresAt && expiresAt < now) {
+      console.log('Cleaning up expired session');
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.startsWith('sb-') || key.includes('supabase')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      await supabase.auth.signOut();
+    }
+  } catch (err) {
+    console.error('Session cleanup error:', err);
+  }
+};
+
+// Run cleanup on import
+cleanupInvalidSessions();
 
 // Database types
 export interface User {

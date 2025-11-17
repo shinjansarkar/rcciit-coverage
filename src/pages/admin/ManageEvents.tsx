@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Calendar, ExternalLink, Image, Loader2 } from "lucide-react";
 import { eventsAPI, periodsAPI } from "@/services/api";
-import { Event, Period } from "@/lib/supabase";
+import { Event, Period, supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface EventWithPeriod extends Event {
@@ -32,6 +32,23 @@ const ManageEvents = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Real-time subscription for events
+    const eventsChannel = supabase
+      .channel('manage-events')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        (payload) => {
+          console.log('Events changed:', payload.eventType);
+          fetchData(); // Refresh data when events change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(eventsChannel);
+    };
   }, []);
 
   const fetchData = async () => {

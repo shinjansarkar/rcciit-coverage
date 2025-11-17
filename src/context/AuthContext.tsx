@@ -49,11 +49,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
         
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Try to get session with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Session check timeout')), 5000);
+        });
         
-        if (error) {
-          console.error('Session recovery error:', error.message);
-          // Clear invalid session data
+        const result = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]).catch((err) => {
+          console.warn('Session check slow/failed:', err);
+          // Don't clear on timeout - might just be slow network
+          return { data: { session: null }, error: err };
+        });
+        
+        const { data: { session }, error } = result;
+        
+        // Only clear if there's a definitive auth error (not timeout/network)
+        if (error && error.message?.includes('JWT') && error.code) {
+          console.log('Invalid JWT detected, clearing auth data');
+          const keysToRemove = Object.keys(localStorage).filter(key => 
+            key.startsWith('sb-') || key.includes('supabase')
+          );
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+          await supabase.auth.signOut();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
+        // If no session but no error, just set user to null (don't clear storage)
+        if (!session) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        // Validate session is not expired
+        const expiresAt = session.expires_at;
+        const now = Math.floor(Date.now() / 1000);
+        
+        if (expiresAt && expiresAt < now) {
+          console.log('Session expired, clearing auth data');
+          const keysToRemove = Object.keys(localStorage).filter(key => 
+            key.startsWith('sb-') || key.includes('supabase')
+          );
+          keysToRemove.forEach(key => localStorage.removeItem(key));
           await supabase.auth.signOut();
           setUser(null);
           setLoading(false);
@@ -67,14 +109,86 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(null);
         }
         setLoading(false);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Auth initialization error:', err);
+        // Only clear on actual auth errors, not network/timeout
+        if (err.message?.includes('JWT') || err.code === 'PGRST301') {
+          const keysToRemove = Object.keys(localStorage).filter(key => 
+            key.startsWith('sb-') || key.includes('supabase')
+          );
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+        }
         setUser(null);
         setLoading(false);
       }
     };
 
     initializeAuth();
+
+    // Handle visibility change - refresh session when user comes back to tab
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && user) {
+        console.log('Tab became visible - checking session');
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error && error.message?.includes('JWT')) {
+            console.log('JWT error on visibility change, clearing auth');
+            const keysToRemove = Object.keys(localStorage).filter(key => 
+              key.startsWith('sb-') || key.includes('supabase')
+            );
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            await supabase.auth.signOut();
+            setUser(null);
+            return;
+          }
+          
+          // If no session but no JWT error, keep existing user state
+          if (!session) {
+            console.log('No session on visibility change, keeping current state');
+            return;
+          }
+          
+          // Check if session is expired
+          const expiresAt = session.expires_at;
+          const now = Math.floor(Date.now() / 1000);
+          
+          if (expiresAt && expiresAt < now) {
+            console.log('Session expired on visibility change');
+            const keysToRemove = Object.keys(localStorage).filter(key => 
+              key.startsWith('sb-') || key.includes('supabase')
+            );
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            await supabase.auth.signOut();
+            setUser(null);
+            return;
+          }
+          
+          if (session?.user) {
+            // Silently refresh user data without showing loading
+            const userWithRole = await fetchUserRole(session.user);
+            setUser(userWithRole);
+          }
+        } catch (err) {
+          console.error('Error checking session on visibility change:', err);
+          // Don't logout on errors, just keep existing state
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Keep-alive: Periodically check session every 5 minutes
+    const keepAliveInterval = setInterval(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log('Keep-alive: Session is active');
+        }
+      } catch (err) {
+        console.error('Keep-alive check failed:', err);
+      }
+    }, 5 * 60 * 1000); // Every 5 minutes
 
     // onAuthStateChange handles any subsequent changes
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -83,9 +197,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (event === 'TOKEN_REFRESHED') {
           console.log('Token refreshed successfully');
+          // Update user with refreshed session
+          if (session?.user) {
+            const userWithRole = await fetchUserRole(session.user);
+            setUser(userWithRole);
+          }
+          return;
         }
         
-        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        if (event === 'SIGNED_OUT') {
           setUser(null);
           setLoading(false);
           return;
@@ -103,69 +223,62 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     );
 
     // Cleanup the listener when the component unmounts
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(keepAliveInterval);
+    };
   }, []) // The empty dependency array ensures this runs only once on mount
 
   const fetchUserRole = async (user: User): Promise<User & { role: string | null }> => {
-    // Set a timeout to prevent infinite hanging
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout fetching user role')), 10000); // 10 second timeout
-    });
-    
-    const fetchPromise = (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle() // Use maybeSingle() instead of single() to handle missing records
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
 
-        if (error) {
-          // Check for JWT/auth errors
-          if (error.message?.includes('JWT') || error.code === 'PGRST301') {
-            console.error('Auth token invalid, clearing session...');
-            await supabase.auth.signOut();
-            setUser(null);
-            setLoading(false);
-            throw new Error('Session expired. Please login again.');
-          }
-          console.error('Error fetching role:', error.message);
-          console.warn('User exists in auth.users but not in public.users. Assigning default role.');
-          return { ...user, role: 'user' };
+      if (error) {
+        // Only logout on critical auth errors, not on network/temporary errors
+        if (error.code === 'PGRST301' && error.message?.includes('JWT expired')) {
+          console.error('JWT token expired - logging out');
+          await supabase.auth.signOut();
+          setUser(null);
+          setLoading(false);
+          navigate('/login');
+          throw new Error('Session expired. Please login again.');
         }
         
-        // If user doesn't exist in public.users table
-        if (!data) {
-          console.warn('User not found in public.users table. Creating entry...');
-          // Try to insert the user into public.users
-          const { error: insertError } = await supabase
-            .from('users')
-            .insert({ 
-              id: user.id, 
-              email: user.email || '', 
-              role: 'user' 
-            });
-          
-          if (insertError) {
-            console.error('Failed to create user entry:', insertError.message);
-          }
-          
-          return { ...user, role: 'user' };
+        // For other errors, just log and return cached role
+        console.warn('Error fetching role (non-critical):', error.message);
+        // Return user with existing role or default
+        return { ...user, role: user.role || 'user' };
+      }
+      
+      // If user doesn't exist in public.users table
+      if (!data) {
+        console.warn('User not found in public.users table. Creating entry...');
+        // Try to insert the user into public.users
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({ 
+            id: user.id, 
+            email: user.email || '', 
+            role: 'user' 
+          });
+        
+        if (insertError) {
+          console.error('Failed to create user entry:', insertError.message);
         }
         
-        return { ...user, role: data.role || 'user' };
-      } catch (err: any) {
-        console.error('Failed to fetch user role:', err);
-        // Don't throw - return user with default role to prevent infinite loop
         return { ...user, role: 'user' };
       }
-    })();
-    
-    try {
-      return await Promise.race([fetchPromise, timeoutPromise]);
+      
+      return { ...user, role: data.role || 'user' };
     } catch (err: any) {
-      console.error('Timeout or error fetching role:', err.message);
-      return { ...user, role: 'user' };
+      console.error('Failed to fetch user role:', err);
+      // Don't throw - return user with preserved role to prevent logout
+      return { ...user, role: user.role || 'user' };
     }
   }
 

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Calendar, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { periodsAPI } from "@/services/api";
-import { Period } from "@/lib/supabase";
+import { Period, supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 const ManagePeriods = () => {
@@ -26,6 +26,23 @@ const ManagePeriods = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Real-time subscription for periods
+    const periodsChannel = supabase
+      .channel('manage-periods')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'periods' },
+        (payload) => {
+          console.log('Periods changed:', payload.eventType);
+          fetchData(); // Refresh data when periods change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(periodsChannel);
+    };
   }, []);
 
   const fetchData = async () => {

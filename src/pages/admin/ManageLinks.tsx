@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, ExternalLink, Link, Loader2, Copy, Check } from "lucide-react";
 import { linksAPI, eventsAPI } from "@/services/api";
-import { ResourceLink, Event } from "@/lib/supabase";
+import { ResourceLink, Event, supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface LinkWithEvent extends ResourceLink {
@@ -31,6 +31,23 @@ const ManageLinks = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Real-time subscription for resource links
+    const linksChannel = supabase
+      .channel('manage-links')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'resource_links' },
+        (payload) => {
+          console.log('Links changed:', payload.eventType);
+          fetchData(); // Refresh data when links change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(linksChannel);
+    };
   }, []);
 
   const fetchData = async () => {

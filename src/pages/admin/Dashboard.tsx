@@ -10,9 +10,11 @@ import {
   TrendingUp,
   Plus,
   Settings,
-  BarChart3
+  BarChart3,
+  RefreshCw
 } from "lucide-react";
 import { dashboardAPI } from "@/services/api";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -29,21 +31,80 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [statsData, activityData] = await Promise.all([
+        
+        // Add timeout to API calls (15 seconds)
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 15000);
+        });
+        
+        const dataPromise = Promise.all([
           dashboardAPI.getStats(),
           dashboardAPI.getRecentActivity()
         ]);
+        
+        const [statsData, activityData] = await Promise.race([
+          dataPromise,
+          timeoutPromise
+        ]) as [typeof statsData, typeof activityData];
+        
         setStats(statsData);
         setRecentActivity(activityData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch dashboard data:', error);
-        toast.error('Failed to load dashboard data');
+        if (error.message === 'Request timeout') {
+          toast.error('Loading timeout - please refresh the page');
+        } else {
+          toast.error('Failed to load dashboard data');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
+
+    // Real-time subscriptions for dashboard updates
+    const eventsChannel = supabase
+      .channel('dashboard-events')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          console.log('Events updated - refreshing dashboard');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    const periodsChannel = supabase
+      .channel('dashboard-periods')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'periods' },
+        () => {
+          console.log('Periods updated - refreshing dashboard');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    const linksChannel = supabase
+      .channel('dashboard-links')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'resource_links' },
+        () => {
+          console.log('Links updated - refreshing dashboard');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(eventsChannel);
+      supabase.removeChannel(periodsChannel);
+      supabase.removeChannel(linksChannel);
+    };
   }, []);
 
   const quickActions = [
@@ -87,12 +148,22 @@ const Dashboard = () => {
             Manage events, resources, and time periods for Rcciit Coverage Team
           </p>
         </div>
-        <Button asChild>
-          <Link to="/admin/events">
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Event
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.reload()}
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button asChild>
+            <Link to="/admin/events">
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Event
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
