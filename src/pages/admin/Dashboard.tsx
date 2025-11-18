@@ -10,8 +10,7 @@ import {
   TrendingUp,
   Plus,
   Settings,
-  BarChart3,
-  RefreshCw
+  BarChart3
 } from "lucide-react";
 import { dashboardAPI } from "@/services/api";
 import { supabase } from "@/lib/supabase";
@@ -148,22 +147,12 @@ const Dashboard = () => {
             Manage events, resources, and time periods for Rcciit Coverage Team
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.reload()}
-            disabled={loading}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button asChild>
-            <Link to="/admin/events">
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Event
-            </Link>
-          </Button>
-        </div>
+        <Button asChild>
+          <Link to="/admin/events">
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Event
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}

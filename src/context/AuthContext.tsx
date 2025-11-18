@@ -31,6 +31,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate()
 
   useEffect(() => {
+    let isInitializing = true;
+    
     // Check for existing session on mount
     const initializeAuth = async () => {
       try {
@@ -49,77 +51,83 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
         
-        // Try to get session with timeout
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Session check timeout')), 5000);
-        });
+        // Try to get session - this will auto-refresh if needed
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        const result = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]).catch((err) => {
-          console.warn('Session check slow/failed:', err);
-          // Don't clear on timeout - might just be slow network
-          return { data: { session: null }, error: err };
-        });
-        
-        const { data: { session }, error } = result;
-        
-        // Only clear if there's a definitive auth error (not timeout/network)
-        if (error && error.message?.includes('JWT') && error.code) {
-          console.log('Invalid JWT detected, clearing auth data');
-          const keysToRemove = Object.keys(localStorage).filter(key => 
-            key.startsWith('sb-') || key.includes('supabase')
-          );
-          keysToRemove.forEach(key => localStorage.removeItem(key));
-          await supabase.auth.signOut();
+        // If there's an error fetching session, check if it's a real auth error
+        if (error) {
+          console.error('Session fetch error:', error);
+          
+          // Only clear tokens if it's a JWT/auth error
+          if (error.message?.includes('JWT') || error.message?.includes('invalid') || error.code === 'PGRST301') {
+            console.log('Invalid JWT detected, clearing tokens');
+            const keysToRemove = Object.keys(localStorage).filter(key => 
+              key.startsWith('sb-') || key.includes('supabase')
+            );
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            await supabase.auth.signOut();
+          }
+          
           setUser(null);
           setLoading(false);
           return;
         }
         
-        // If no session but no error, just set user to null (don't clear storage)
-        if (!session) {
+        // If no session but tokens exist, they're invalid - clean up
+        if (!session && authKeys.length > 0) {
+          console.log('No session but tokens exist, cleaning up');
+          const keysToRemove = Object.keys(localStorage).filter(key => 
+            key.startsWith('sb-') || key.includes('supabase')
+          );
+          keysToRemove.forEach(key => localStorage.removeItem(key));
           setUser(null);
           setLoading(false);
           return;
         }
 
         // Validate session is not expired
-        const expiresAt = session.expires_at;
-        const now = Math.floor(Date.now() / 1000);
-        
-        if (expiresAt && expiresAt < now) {
-          console.log('Session expired, clearing auth data');
-          const keysToRemove = Object.keys(localStorage).filter(key => 
-            key.startsWith('sb-') || key.includes('supabase')
-          );
-          keysToRemove.forEach(key => localStorage.removeItem(key));
-          await supabase.auth.signOut();
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        if (session?.user) {
+        if (session) {
+          const expiresAt = session.expires_at;
+          const now = Math.floor(Date.now() / 1000);
+          
+          // If expired, clean up
+          if (expiresAt && expiresAt < now) {
+            console.log('Session expired, cleaning up');
+            const keysToRemove = Object.keys(localStorage).filter(key => 
+              key.startsWith('sb-') || key.includes('supabase')
+            );
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            await supabase.auth.signOut();
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+          
+          // Valid session - fetch user role and set user
+          console.log('Valid session found, fetching user data');
           const userWithRole = await fetchUserRole(session.user);
           setUser(userWithRole);
         } else {
           setUser(null);
         }
+        
         setLoading(false);
       } catch (err: any) {
         console.error('Auth initialization error:', err);
-        // Only clear on actual auth errors, not network/timeout
+        
+        // Only clear on actual auth errors
         if (err.message?.includes('JWT') || err.code === 'PGRST301') {
+          console.log('Auth error, clearing tokens');
           const keysToRemove = Object.keys(localStorage).filter(key => 
             key.startsWith('sb-') || key.includes('supabase')
           );
           keysToRemove.forEach(key => localStorage.removeItem(key));
         }
+        
         setUser(null);
         setLoading(false);
+      } finally {
+        isInitializing = false;
       }
     };
 
@@ -193,10 +201,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // onAuthStateChange handles any subsequent changes
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        // Don't process events during initial load
+        if (isInitializing) return;
+        
+        console.log('Auth state changed:', event, 'Session:', session ? 'exists' : 'null');
         
         if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed successfully');
+          console.log('✅ Token refreshed successfully at', new Date().toLocaleTimeString());
           // Update user with refreshed session
           if (session?.user) {
             const userWithRole = await fetchUserRole(session.user);
@@ -206,11 +217,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
         
         if (event === 'SIGNED_OUT') {
+          console.log('User signed out, clearing state');
+          // Clear all auth tokens
+          const keysToRemove = Object.keys(localStorage).filter(key => 
+            key.startsWith('sb-') || key.includes('supabase')
+          );
+          keysToRemove.forEach(key => localStorage.removeItem(key));
           setUser(null);
           setLoading(false);
           return;
         }
+        
+        if (event === 'SIGNED_IN') {
+          console.log('User signed in');
+          if (session?.user) {
+            const userWithRole = await fetchUserRole(session.user);
+            setUser(userWithRole);
+          }
+          return;
+        }
 
+        // Handle other events
         if (session?.user) {
           const userWithRole = await fetchUserRole(session.user);
           setUser(userWithRole);
