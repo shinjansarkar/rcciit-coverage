@@ -156,10 +156,6 @@ const EventsList = () => {
               <FolderOpen className="w-4 h-4" />
               <span>{events.length} events</span>
             </div>
-            <div className="flex items-center gap-1">
-              <ExternalLink className="w-4 h-4" />
-              <span>{events.reduce((acc, event) => acc + event.linkCount, 0)} total links</span>
-            </div>
           </div>
         </div>
 

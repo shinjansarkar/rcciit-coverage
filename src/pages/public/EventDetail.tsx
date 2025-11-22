@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, ExternalLink, Download, FolderOpen, Image, Eye } from "lucide-react";
+import { ArrowLeft, Calendar, ExternalLink, Download, FolderOpen, Image } from "lucide-react";
 import { supabase } from '../../lib/supabase';
 import SEO from '@/components/common/SEO';
 import { createEventStructuredData, createBreadcrumbStructuredData } from '@/lib/structuredData';
@@ -220,10 +220,6 @@ const EventDetail = () => {
                 <ExternalLink className="w-4 h-4" />
                 <span>{eventDetail.links.length} resource links</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Download className="w-4 h-4" />
-                <span>{eventDetail.links.reduce((acc, link) => acc + link.fileCount, 0)} total files</span>
-              </div>
             </div>
           </div>
         </div>
@@ -270,15 +266,6 @@ const EventDetail = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleLinkClick(link.url)}
-                        className="min-w-0"
-                      >
-                        <Eye className="w-4 h-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Preview</span>
-                      </Button>
                       <Button
                         size="sm"
                         onClick={() => handleLinkClick(link.url)}
