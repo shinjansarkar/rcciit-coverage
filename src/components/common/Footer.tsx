@@ -16,7 +16,7 @@ const Footer = () => {
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm">
               Your central hub for accessing event resources, photos, and documents from 
-              Regional College of Computer and Information Technology.
+              RCC Institute of Information Technology.
             </p>
           </div>
 
@@ -58,7 +58,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Contact</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>Regional College of Computer and Information Technology</p>
+              <p>RCC Institute of Information Technology</p>
               <p>Beliaghata, Kolkata - 700015</p>
               <p>West Bengal, India</p>
             </div>
