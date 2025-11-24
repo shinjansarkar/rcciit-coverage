@@ -147,17 +147,17 @@ const Home = () => {
               RCCIIT Coverage
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 drop-shadow-xl px-2">
-              Access event photos, documents, and resources from our college events organized by time periods
+              A structured event archive built for quick access — browse by timelines, explore resources, and revisit memories with ease.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-              <Button size="lg" className="glossy-gold w-full sm:w-auto text-white border-0">
+            <div className="flex justify-center items-center">
+              <Button 
+                size="lg" 
+                className="glossy-gold w-full sm:w-auto text-white border-0"
+                onClick={() => document.getElementById('time-periods')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 <FolderOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Browse Resources
               </Button>
-              <div className="flex items-center gap-2 text-white/90 text-sm sm:text-base glass-effect px-4 py-2 rounded-lg">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Serving the RCCIIT community</span>
-              </div>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ const Home = () => {
       </section>
 
       {/* Time Periods Section */}
-      <section className="py-16 relative">
+      <section id="time-periods" className="py-16 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 drop-shadow-lg">
@@ -277,7 +277,7 @@ const Home = () => {
               Contact our admin team to request access to specific events or time periods
             </p>
             <Button size="lg" asChild className="glossy-gold border-0">
-              <a href="mailto:coverage.rcciit.official@gmail.com">
+              <a href="https://www.instagram.com/rcciit_coverage/" target="_blank" rel="noopener noreferrer">
                 Contact Admin
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>

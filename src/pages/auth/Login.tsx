@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import SEO from '@/components/common/SEO';
@@ -51,13 +51,15 @@ const Login = () => {
       
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-12 h-12 bg-primary-foreground/10 backdrop-blur rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-7 h-7 text-primary-foreground" />
-            </div>
+        <div className="mb-8">
+          <Link to="/" className="inline-flex items-center space-x-3">
+            <img 
+              src="/logo.png" 
+              alt="RCCIIT Coverage Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <div className="text-left">
-              <h1 className="text-2xl font-bold text-primary-foreground">Rcciit Coverage Team</h1>
+              <h1 className="text-2xl font-bold text-primary-foreground uppercase">RCCIIT Coverage Team</h1>
               <p className="text-sm text-primary-foreground/80">Admin Portal</p>
             </div>
           </Link>
@@ -144,9 +146,9 @@ const Login = () => {
         </Card>
 
         {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-primary-foreground/60">
-            © {new Date().getFullYear()} Rcciit Coverage Team. All rights reserved.
+        <div className="mt-8">
+          <p className="text-sm text-primary-foreground/60 text-center">
+            © {new Date().getFullYear()} RCCIIT Coverage Team. All rights reserved.
           </p>
         </div>
       </div>

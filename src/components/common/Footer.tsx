@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Instagram } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -14,7 +14,7 @@ const Footer = () => {
                 alt="RCCIIT Coverage Logo" 
                 className="w-8 h-8 object-contain"
               />
-              <span className="text-lg font-bold text-foreground">Rcciit Coverage Team</span>
+              <span className="text-lg font-bold text-foreground uppercase">RCCIIT Coverage Team</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm">
               Your central hub for accessing event resources, photos, and documents from 
@@ -35,12 +35,38 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <button
+                  onClick={() => {
+                    const element = document.getElementById('time-periods');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      window.location.href = '/#time-periods';
+                    }
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
+                >
+                  Browse Resources
+                </button>
+              </li>
+              <li>
                 <Link 
                   to="/admin" 
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Admin Portal
                 </Link>
+              </li>
+              <li>
+                <a 
+                  href="https://www.instagram.com/rcciit_coverage/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                >
+                  Instagram
+                  <Instagram className="w-3 h-3" />
+                </a>
               </li>
               <li>
                 <a 
@@ -70,7 +96,7 @@ const Footer = () => {
         <div className="mt-8 pt-6 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Rcciit Coverage Team. All rights reserved.
+              © {new Date().getFullYear()} RCCIIT Coverage Team. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground">
               Built with ❤️ for the RCCIIT Coverage Team
