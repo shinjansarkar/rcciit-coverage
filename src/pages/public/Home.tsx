@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, FolderOpen, ArrowRight, Clock } from "lucide-react";
+import { Calendar, Users, FolderOpen, ArrowRight, Clock, Instagram } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from '../../lib/supabase';
 import SEO from '@/components/common/SEO';
@@ -285,6 +285,17 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Floating Instagram Icon */}
+      <a
+        href="https://www.instagram.com/rcciit_coverage/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 group"
+        aria-label="Follow us on Instagram"
+      >
+        <Instagram className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+      </a>
     </div>
   );
 };
