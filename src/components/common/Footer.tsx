@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { GraduationCap, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -9,14 +9,16 @@ const Footer = () => {
           {/* Logo and Description */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-primary-foreground" />
-              </div>
-                              <span className="text-lg font-bold text-foreground">Rcciit Coverage Team</span>
+              <img 
+                src="/logo.png" 
+                alt="RCCIIT Coverage Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <span className="text-lg font-bold text-foreground">Rcciit Coverage Team</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm">
               Your central hub for accessing event resources, photos, and documents from 
-              Regional College of Computer and Information Technology.
+              RCC Institute of Information Technology.
             </p>
           </div>
 
@@ -58,7 +60,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Contact</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>Regional College of Computer and Information Technology</p>
+              <p>RCC Institute of Information Technology</p>
               <p>Beliaghata, Kolkata - 700015</p>
               <p>West Bengal, India</p>
             </div>
@@ -71,7 +73,7 @@ const Footer = () => {
               © {new Date().getFullYear()} Rcciit Coverage Team. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground">
-              Built with ❤️ for the RCCIIT community
+              Built with ❤️ for the RCCIIT Coverage Team
             </p>
           </div>
         </div>

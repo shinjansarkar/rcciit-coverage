@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const Navbar = () => {
@@ -14,12 +14,14 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/logo.png" 
+              alt="RCCIIT Coverage Logo" 
+              className="w-10 h-10 object-contain"
+            />
             <div>
-              <h1 className="text-xl font-bold text-foreground">Rcciit Coverage Team</h1>
+              <h1 className="text-xl font-bold text-foreground uppercase">RCCIIT Coverage Team</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Event Resources Portal</p>
             </div>
           </Link>

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, LayoutDashboard, Calendar, FolderOpen, ExternalLink, Home } from "lucide-react";
+import { LayoutDashboard, Calendar, FolderOpen, ExternalLink, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AdminSidebar = () => {
@@ -38,9 +38,11 @@ const AdminSidebar = () => {
         {/* Logo */}
         <div className="p-6 border-b border-border">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="RCCIIT Coverage Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <div>
               <h1 className="text-lg font-bold text-foreground">RCCIIT Coverage</h1>
               <p className="text-xs text-muted-foreground">Admin Panel</p>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, ExternalLink, FolderOpen, Image, Users } from "lucide-react";
 import { supabase } from '../../lib/supabase';
+import BackgroundCarousel from '@/components/common/BackgroundCarousel';
 
 // Mock data - replace with actual Supabase data
 // const mockEvents = [
@@ -133,10 +134,12 @@ const EventsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen relative">
+      <BackgroundCarousel />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* Back Button */}
-        <Button variant="ghost" asChild className="mb-6">
+        <Button variant="ghost" asChild className="mb-6 glass-effect hover:glass-effect-strong">
           <Link to="/">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Time Periods
@@ -144,14 +147,14 @@ const EventsList = () => {
         </Button>
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <div className="mb-8 glass-effect-strong rounded-2xl p-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 drop-shadow-lg">
             {periodInfo.title}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className="text-lg text-foreground/70 mb-4">
             {periodInfo.description}
           </p>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-sm text-foreground/60">
             <div className="flex items-center gap-1">
               <FolderOpen className="w-4 h-4" />
               <span>{events.length} events</span>
@@ -164,13 +167,13 @@ const EventsList = () => {
           {events.map((event) => (
             <Card 
               key={event.id} 
-              className="group hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-card"
+              className="group hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border-0 glass-effect hover:glass-effect-strong"
             >
               <div className="relative overflow-hidden rounded-t-lg">
-                <div className="h-48 bg-gradient-primary opacity-80"></div>
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                <div className="h-48 bg-gradient-primary opacity-60"></div>
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors"></div>
                 <Badge 
-                  className={`absolute top-4 right-4 ${getCategoryColor(event.category)}`}
+                  className={`absolute top-4 right-4 glass-effect-strong ${getCategoryColor(event.category)}`}
                   variant="outline"
                 >
                   {event.category}
@@ -181,13 +184,13 @@ const EventsList = () => {
                 <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
                   {event.title}
                 </CardTitle>
-                <CardDescription className="text-sm leading-relaxed line-clamp-3">
+                <CardDescription className="text-sm leading-relaxed line-clamp-3 text-foreground/60">
                   {event.description}
                 </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center justify-between text-sm text-foreground/60">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     <span>{formatDate(event.updated_at)}</span>
@@ -200,7 +203,7 @@ const EventsList = () => {
                 
                 <Button 
                   asChild 
-                  className="w-full group/button bg-gradient-primary hover:shadow-card-hover transition-all duration-300"
+                  className="w-full group/button glossy-gold border-0 hover:shadow-card-hover transition-all duration-300"
                 >
                   <Link to={`/event/${event.id}`}>
                     <Image className="w-4 h-4 mr-2" />
@@ -214,15 +217,15 @@ const EventsList = () => {
 
         {/* Empty State */}
         {events.length === 0 && (
-          <div className="text-center py-16">
-            <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <div className="text-center py-16 glass-effect-strong rounded-2xl">
+            <FolderOpen className="w-16 h-16 text-primary mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
               No events found
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-foreground/70 mb-6">
               There are no events available for this time period yet.
             </p>
-            <Button asChild>
+            <Button asChild className="glossy-gold border-0">
               <Link to="/">
                 Back to Time Periods
               </Link>

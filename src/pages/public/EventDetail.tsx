@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, ExternalLink, Download, FolderOpen, Image } from "
 import { supabase } from '../../lib/supabase';
 import SEO from '@/components/common/SEO';
 import { createEventStructuredData, createBreadcrumbStructuredData } from '@/lib/structuredData';
+import BackgroundCarousel from '@/components/common/BackgroundCarousel';
 
 // Mock data - replace with actual Supabase data
 // const mockEventDetail = {
@@ -166,7 +167,9 @@ const EventDetail = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      <BackgroundCarousel />
+      
       {eventDetail && (
         <SEO
           title={eventDetail.title}
@@ -180,9 +183,9 @@ const EventDetail = () => {
         />
       )}
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* Back Button */}
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 glass-effect hover:glass-effect-strong">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to events
         </Button>
@@ -190,28 +193,28 @@ const EventDetail = () => {
         {/* Event Header */}
         <div className="mb-8">
           {/* Cover Image */}
-          <div className="relative overflow-hidden rounded-lg mb-6">
-            <div className="h-64 bg-gradient-primary"></div>
-            <div className="absolute inset-0 bg-black/20"></div>
+          <div className="relative overflow-hidden rounded-lg mb-6 glass-effect-strong">
+            <div className="h-64 bg-gradient-primary opacity-60"></div>
+            <div className="absolute inset-0 bg-black/30"></div>
             <div className="absolute bottom-4 left-4 right-4">
               <Badge 
-                className="bg-card text-card-foreground border-0 mb-2"
+                className="glass-effect-strong border-0 mb-2"
                 variant="outline"
               >
                 {eventDetail.category}
               </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-lg">
                 {eventDetail.title}
               </h1>
             </div>
           </div>
 
           {/* Event Info */}
-          <div className="space-y-4">
-            <p className="text-lg text-muted-foreground leading-relaxed">
+          <div className="space-y-4 glass-effect rounded-xl p-6">
+            <p className="text-lg text-foreground/70 leading-relaxed">
               {eventDetail.description}
             </p>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/60">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 <span>{formatDate(eventDetail.created_at)}</span>
@@ -226,7 +229,7 @@ const EventDetail = () => {
 
         {/* Resource Links */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-foreground">
+          <h2 className="text-2xl font-bold text-foreground drop-shadow-lg">
             Available Resources
           </h2>
           
@@ -234,7 +237,7 @@ const EventDetail = () => {
             {eventDetail.links.map((link) => (
               <Card 
                 key={link.id} 
-                className="group hover:shadow-card-hover transition-all duration-300 border-0 shadow-card"
+                className="group hover:shadow-card-hover transition-all duration-300 border-0 glass-effect hover:glass-effect-strong"
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
@@ -247,18 +250,18 @@ const EventDetail = () => {
                           </CardTitle>
                         </div>
                         <Badge 
-                          className={getTypeColor(link.type)}
+                          className={`glass-effect-strong ${getTypeColor(link.type)}`}
                           variant="outline"
                         >
                           {link.type}
                         </Badge>
                       </div>
                       
-                      <CardDescription className="text-sm leading-relaxed">
+                      <CardDescription className="text-sm leading-relaxed text-foreground/60">
                         {link.description}
                       </CardDescription>
                       
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-foreground/60">
                         <span>{link.fileCount} files</span>
                         <span>•</span>
                         <span>{link.size}</span>
@@ -269,7 +272,7 @@ const EventDetail = () => {
                       <Button
                         size="sm"
                         onClick={() => handleLinkClick(link.url)}
-                        className="bg-gradient-primary min-w-0"
+                        className="glossy-gold border-0 min-w-0"
                       >
                         <ExternalLink className="w-4 h-4 sm:mr-2" />
                         <span className="hidden sm:inline">Open Drive</span>
@@ -283,14 +286,14 @@ const EventDetail = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-12 p-6 bg-muted/30 rounded-lg text-center">
+        <div className="mt-12 p-6 glass-effect-strong rounded-2xl text-center">
           <h3 className="text-xl font-semibold text-foreground mb-2">
             Missing Resources?
           </h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-foreground/70 mb-4">
             If you notice any missing files or have additional resources to add, please contact our admin team.
           </p>
-          <Button asChild>
+          <Button asChild className="glossy-gold border-0">
             <a href="mailto:coverage.rcciit.official@gmail.com">
               Contact Admin
             </a>
