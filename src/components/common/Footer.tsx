@@ -1,109 +1,63 @@
 import { Link } from "react-router-dom";
-import { ExternalLink, Instagram } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Footer = () => {
   return (
-    <footer className="bg-card border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Logo and Description */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <img 
-                src="/logo.png" 
-                alt="RCCIIT Coverage Logo" 
-                className="w-8 h-8 object-contain"
-              />
-              <span className="text-lg font-bold text-foreground uppercase">RCCIIT Coverage Team</span>
-            </Link>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              Your central hub for accessing event resources, photos, and documents from 
-              RCC Institute of Information Technology.
-            </p>
-          </div>
+    <footer className="bg-black relative overflow-hidden pt-20 pb-10">
+      {/* Top Border Indicator */}
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-white/20"></div>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link 
-                  to="/" 
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    const element = document.getElementById('time-periods');
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                      window.location.href = '/#time-periods';
-                    }
-                  }}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
-                  Browse Resources
-                </button>
-              </li>
-              <li>
-                <Link 
-                  to="/admin" 
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Admin Portal
-                </Link>
-              </li>
-              <li>
-                <a 
-                  href="https://www.instagram.com/rcciit_coverage/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                >
-                  Instagram
-                  <Instagram className="w-3 h-3" />
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="https://rcciit.org" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                >
-                  RCCIIT Website
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </li>
-            </ul>
-          </div>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 flex flex-col justify-between h-full relative z-10">
 
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Contact</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>RCC Institute of Information Technology</p>
-              <p>Beliaghata, Kolkata - 700015</p>
-              <p>West Bengal, India</p>
+        {/* Info Grid */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-12 mt-12">
+
+          <div className="space-y-6">
+            <h2 className="text-white/90 text-lg md:text-xl font-light tracking-tight max-w-sm leading-relaxed">
+              The definitive visual archive for RCC Institute of Information Technology.
+            </h2>
+            <div className="flex flex-wrap gap-6 pt-4">
+              <a href="https://www.instagram.com/rcciit_coverage/" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors uppercase tracking-[0.2em] text-xs font-mono font-medium">Instagram</a>
+              <a href="https://rcciit.edu.in/" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white transition-colors uppercase tracking-[0.2em] text-xs font-mono font-medium">Official Site</a>
+              <Link to="/login" className="text-white/70 hover:text-white transition-colors uppercase tracking-[0.2em] text-xs font-mono font-medium">Admin</Link>
             </div>
           </div>
-        </div>
 
-        <div className="mt-8 pt-6 border-t border-border">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} RCCIIT Coverage Team. All rights reserved.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Built with ❤️ for the RCCIIT Coverage Team
+          <div className="text-left md:text-right flex flex-col items-start md:items-end">
+            <div className="w-14 h-14 relative overflow-hidden rounded-full bg-white/10 border border-white/20 mb-6 hover:scale-105 transition-all duration-500 shadow-xl flex items-center justify-center p-2">
+              <img
+                src="/logo.png"
+                alt="RCCIIT Coverage Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <p className="text-white/70 text-xs tracking-[0.1em] font-mono leading-relaxed uppercase">
+              Canal South Road, Beliaghata<br />
+              Kolkata - 700015
             </p>
           </div>
+
         </div>
       </div>
+
+      {/* Massive Typography - Escaped from max-w bounds for true viewport scaling */}
+      <div className="w-full relative z-10 flex flex-col items-center justify-center mb-12 select-none overflow-hidden group">
+        <h1 className="text-[14.5vw] leading-[0.8] font-bold tracking-tighter text-transparent opacity-25 group-hover:opacity-100 group-hover:text-shadow-lg transition-all duration-1000 whitespace-nowrap px-4" style={{ WebkitTextStroke: "2px #ffffff" }}>
+          COVERAGE.
+        </h1>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10 w-full">
+        {/* Bottom Credits */}
+        <div className="flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs tracking-[0.3em] font-mono text-white/50 uppercase w-full gap-5 pt-8 border-t border-white/10">
+          <span>&copy; {new Date().getFullYear()} COVERAGE TEAM</span>
+          <span className="hidden md:inline">ESTD. FOR ARCHIVAL</span>
+          <span className="text-center sm:text-right">Built with ❤️ for the RCCIIT Coverage Team</span>
+        </div>
+      </div>
+
+      {/* Subtle Bottom Glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-white/5 blur-[100px] pointer-events-none"></div>
     </footer>
   );
 };

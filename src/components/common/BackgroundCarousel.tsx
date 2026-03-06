@@ -83,8 +83,6 @@ const BackgroundCarousel = () => {
           ))}
         </CarouselContent>
       </Carousel>
-      {/* Dark overlay with blur effect */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] pointer-events-none"></div>
     </div>
   );
 };

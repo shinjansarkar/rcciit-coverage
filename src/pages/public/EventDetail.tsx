@@ -1,61 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, ExternalLink, Download, FolderOpen, Image } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Calendar, ExternalLink, Download, FolderOpen, Image } from "lucide-react";
 import { supabase } from '../../lib/supabase';
 import SEO from '@/components/common/SEO';
 import { createEventStructuredData, createBreadcrumbStructuredData } from '@/lib/structuredData';
 import BackgroundCarousel from '@/components/common/BackgroundCarousel';
-
-// Mock data - replace with actual Supabase data
-// const mockEventDetail = {
-//   id: "event-1",
-//   title: "Annual Cultural Fest 2024",
-//   description: "Three-day cultural extravaganza featuring music, dance, and theatrical performances from March 15-17, 2024.",
-//   date: "2024-03-15",
-//   category: "Cultural",
-//   coverImage: "/api/placeholder/600/300",
-//   links: [
-//     {
-//       id: "link-1",
-//       title: "Day 1 - Opening Ceremony Photos",
-//       description: "High-resolution photos from the grand opening ceremony",
-//       url: "https://drive.google.com/drive/folders/1ABC123...",
-//       type: "photos",
-//       fileCount: 45,
-//       size: "127 MB"
-//     },
-//     {
-//       id: "link-2", 
-//       title: "Day 2 - Cultural Performances",
-//       description: "Photos and videos from dance and music competitions",
-//       url: "https://drive.google.com/drive/folders/1DEF456...",
-//       type: "mixed",
-//       fileCount: 89,
-//       size: "234 MB"
-//     },
-//     {
-//       id: "link-3",
-//       title: "Day 3 - Prize Distribution",
-//       description: "Award ceremony and closing event documentation",
-//       url: "https://drive.google.com/drive/folders/1GHI789...",
-//       type: "photos",
-//       fileCount: 32,
-//       size: "98 MB"
-//     },
-//     {
-//       id: "link-4",
-//       title: "Event Brochure & Schedule",
-//       description: "Official program schedule and promotional materials",
-//       url: "https://drive.google.com/drive/folders/1JKL012...",
-//       type: "documents",
-//       fileCount: 8,
-//       size: "15 MB"
-//     }
-//   ]
-// };
+import { motion } from "framer-motion";
 
 const EventDetail = () => {
   const { eventId } = useParams();
@@ -78,7 +28,6 @@ const EventDetail = () => {
         setEventDetail(null);
       } else if (data) {
         const links = data.resource_links ?? [];
-        // Add event_count for total files
         const totalFiles = links.reduce((acc: number, link: any) => acc + (link.fileCount ?? 0), 0);
         setEventDetail({ ...data, links, event_count: totalFiles });
       }
@@ -92,26 +41,13 @@ const EventDetail = () => {
   const getTypeIcon = (type: string) => {
     switch (type?.toLowerCase()) {
       case "photos":
-        return <Image className="w-5 h-5" />;
+        return <Image className="w-5 h-5 text-white/50" />;
       case "documents":
-        return <FolderOpen className="w-5 h-5" />;
+        return <FolderOpen className="w-5 h-5 text-white/50" />;
       case "mixed":
-        return <Download className="w-5 h-5" />;
+        return <Download className="w-5 h-5 text-white/50" />;
       default:
-        return <ExternalLink className="w-5 h-5" />;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case "photos":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "documents":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "mixed":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return <ExternalLink className="w-5 h-5 text-white/50" />;
     }
   };
 
@@ -124,30 +60,10 @@ const EventDetail = () => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-32 mb-6"></div>
-            <div className="h-64 bg-muted rounded-lg mb-6"></div>
-            <div className="h-12 bg-muted rounded w-96 mb-4"></div>
-            <div className="h-6 bg-muted rounded w-64 mb-8"></div>
-            
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="h-6 bg-muted rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-full mb-4"></div>
-                    <div className="h-10 bg-muted rounded w-32"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -156,7 +72,7 @@ const EventDetail = () => {
     id: eventDetail.id,
     title: eventDetail.title,
     description: eventDetail.description,
-    date: eventDetail.event_date,
+    date: eventDetail.event_date || eventDetail.created_at,
     coverImage: eventDetail.cover_image
   }) : null;
 
@@ -167,138 +83,151 @@ const EventDetail = () => {
   ]);
 
   return (
-    <div className="min-h-screen relative">
-      <BackgroundCarousel />
-      
+    <div className="min-h-screen bg-black relative text-white selection:bg-white selection:text-black font-sans">
+      {/* Dynamic Background Image Glimpse */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <BackgroundCarousel />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[12px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/95"></div>
+      </div>
+
       {eventDetail && (
         <SEO
           title={eventDetail.title}
-          description={eventDetail.description || `Comprehensive documentation and resources for ${eventDetail.title}. View photos, videos, and related materials from this RCCIIT event.`}
-          keywords={`${eventDetail.title}, RCCIIT event, ${eventDetail.category || 'college event'}, event documentation, photos, videos`}
+          description={eventDetail.description || `Comprehensive documentation and resources for ${eventDetail.title}.`}
+          keywords={`${eventDetail.title}, RCCIIT event, event documentation, photos, videos`}
           url={`/event/${eventId}`}
           type="event"
           image={eventDetail.cover_image}
-          publishedTime={eventDetail.event_date}
+          publishedTime={eventDetail.event_date || eventDetail.created_at}
           structuredData={[eventStructuredData, breadcrumbData]}
         />
       )}
-      
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
-        {/* Back Button */}
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 glass-effect hover:glass-effect-strong">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to events
-        </Button>
 
-        {/* Event Header */}
-        <div className="mb-8">
-          {/* Cover Image */}
-          <div className="relative overflow-hidden rounded-lg mb-6 glass-effect-strong">
-            <div className="h-64 bg-gradient-primary opacity-60"></div>
-            <div className="absolute inset-0 bg-black/30"></div>
-            <div className="absolute bottom-4 left-4 right-4">
-              <Badge 
-                className="glass-effect-strong border-0 mb-2"
-                variant="outline"
-              >
-                {eventDetail.category}
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-lg">
-                {eventDetail.title}
-              </h1>
-            </div>
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-12 py-32 relative z-10">
+
+        {/* Back Navigation */}
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center text-sm font-medium tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors mb-16 group"
+        >
+          <ArrowLeft className="w-4 h-4 mr-3 group-hover:-translate-x-2 transition-transform" />
+          Back to Events
+        </motion.button>
+
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-24"
+        >
+          <div className="mb-6 flex items-center gap-4 text-xs font-mono text-white/40 uppercase tracking-widest">
+            {eventDetail.category && <span>{eventDetail.category}</span>}
+            {eventDetail.category && <span>•</span>}
+            <span className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" />
+              {formatDate(eventDetail.updated_at || eventDetail.created_at)}
+            </span>
           </div>
 
-          {/* Event Info */}
-          <div className="space-y-4 glass-effect rounded-xl p-6">
-            <p className="text-lg text-foreground/70 leading-relaxed">
-              {eventDetail.description}
-            </p>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/60">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{formatDate(eventDetail.created_at)}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <ExternalLink className="w-4 h-4" />
-                <span>{eventDetail.links.length} resource links</span>
-              </div>
-            </div>
-          </div>
-        </div>
+          <h1 className="text-5xl sm:text-7xl lg:text-[6rem] font-black tracking-tighter text-white mb-8 leading-[1.05]">
+            {eventDetail.title}
+          </h1>
 
-        {/* Resource Links */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-foreground drop-shadow-lg">
-            Available Resources
-          </h2>
-          
-          <div className="space-y-4">
-            {eventDetail.links.map((link) => (
-              <Card 
-                key={link.id} 
-                className="group hover:shadow-card-hover transition-all duration-300 border-0 glass-effect hover:glass-effect-strong"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          {getTypeIcon(link.type)}
-                          <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                            {link.title}
-                          </CardTitle>
-                        </div>
-                        <Badge 
-                          className={`glass-effect-strong ${getTypeColor(link.type)}`}
-                          variant="outline"
-                        >
-                          {link.type}
-                        </Badge>
-                      </div>
-                      
-                      <CardDescription className="text-sm leading-relaxed text-foreground/60">
-                        {link.description}
-                      </CardDescription>
-                      
-                      <div className="flex items-center gap-4 text-sm text-foreground/60">
-                        <span>{link.fileCount} files</span>
-                        <span>•</span>
-                        <span>{link.size}</span>
-                      </div>
+          <p className="text-xl md:text-3xl text-white/60 font-light max-w-3xl leading-relaxed">
+            {eventDetail.description}
+          </p>
+        </motion.div>
+
+        {/* Resources Collection Layout */}
+        <div className="space-y-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="flex items-end justify-between border-b border-white/10 pb-6 mb-8"
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              Archived Assets
+            </h2>
+            <span className="text-sm font-mono tracking-widest text-white/40 uppercase hidden sm:block">
+              {eventDetail.links.length} Collections
+            </span>
+          </motion.div>
+
+          {eventDetail.links.length === 0 ? (
+            <div className="py-20 text-center border top-0 border-white/5 rounded-3xl glass-panel">
+              <FolderOpen className="w-12 h-12 text-white/20 mx-auto mb-4" />
+              <p className="text-white/50 font-light text-lg">No assets have been archived for this event yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {eventDetail.links.map((link: any, index: number) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                  key={link.id}
+                  onClick={() => handleLinkClick(link.url)}
+                  className="group relative cursor-pointer glass-panel p-6 sm:p-8 rounded-[1.5rem] flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-500"
+                >
+                  {/* Subtle Hover Gradient */}
+                  <div className="absolute inset-0 bg-white/[0.02] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-700 ease-[0.16,1,0.3,1] z-0" />
+
+                  <div className="relative z-10 flex items-start sm:items-center gap-6">
+                    <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors duration-500">
+                      {getTypeIcon(link.type)}
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleLinkClick(link.url)}
-                        className="glossy-gold border-0 min-w-0"
-                      >
-                        <ExternalLink className="w-4 h-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Open Drive</span>
-                      </Button>
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-white/80 group-hover:text-white transition-colors mb-2">
+                        {link.title}
+                      </h3>
+                      <p className="text-sm md:text-base text-white/40 font-light">
+                        {link.description || "Collection of assets"}
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+
+                  <div className="relative z-10 flex items-center justify-between md:justify-end gap-12 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t border-white/5 md:border-t-0">
+                    <div className="flex items-center gap-8 text-sm font-mono uppercase tracking-widest text-white/30 hidden sm:flex">
+                      <span>{link.type || 'ASSETS'}</span>
+                    </div>
+
+                    <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 shrink-0">
+                      <ArrowUpRight className="w-5 h-5 text-white/50 group-hover:text-black transition-colors duration-500" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* CTA Section */}
-        <div className="mt-12 p-6 glass-effect-strong rounded-2xl text-center">
-          <h3 className="text-xl font-semibold text-foreground mb-2">
-            Missing Resources?
+        {/* Missing Elements Contact */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.8 }}
+          className="mt-24 sm:mt-32 p-10 sm:p-16 border border-white/5 rounded-[2.5rem] flex flex-col items-center text-center relative overflow-hidden glass-panel"
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
+            Missing Archives?
           </h3>
-          <p className="text-foreground/70 mb-4">
-            If you notice any missing files or have additional resources to add, please contact our admin team.
+          <p className="text-lg text-white/50 font-light max-w-xl mb-10 leading-relaxed">
+            Help us complete the historical record. If you have photographs or documentation for this event that isn't listed, please reach out.
           </p>
-          <Button asChild className="glossy-gold border-0">
-            <a href="mailto:coverage.rcciit.official@gmail.com">
-              Contact Admin
-            </a>
-          </Button>
-        </div>
+          <a
+            href="mailto:coverage.rcciit.official@gmail.com"
+            className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/20 text-white font-medium hover:bg-white hover:text-black transition-all duration-500"
+          >
+            Contact Coverage Team
+          </a>
+        </motion.div>
       </div>
     </div>
   );
