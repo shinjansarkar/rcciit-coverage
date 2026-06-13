@@ -51,8 +51,17 @@ const Footer = () => {
         {/* Bottom Credits */}
         <div className="flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs tracking-[0.3em] font-mono text-white/50 uppercase w-full gap-5 pt-8 border-t border-white/10">
           <span>&copy; {new Date().getFullYear()} COVERAGE TEAM</span>
-          <span className="hidden md:inline">ESTD. FOR ARCHIVAL</span>
-          <span className="text-center sm:text-right">Built with ❤️ for the RCCIIT Coverage Team</span>
+          <div className="text-center sm:text-right group relative z-50 cursor-pointer">
+            <span className="text-white/50 group-hover:text-white/80 transition-all duration-700 ease-out">
+              Dangerously over-engineered by{" "}
+              <span className="font-bold tracking-[0.2em] bg-gradient-to-r from-neutral-500 via-white to-neutral-500 bg-clip-text text-transparent border-b border-white/30 border-dashed pb-[1px] group-hover:border-white/80 group-hover:text-white group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.6)] transition-all duration-500">
+                SHINJAN, SAMBIT & SUPRATIM
+              </span>
+            </span>
+            <span className="absolute -top-12 left-1/2 sm:left-auto sm:right-0 -translate-x-1/2 sm:translate-x-0 bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 text-[10px] tracking-[0.2em] px-4 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0 pointer-events-none whitespace-nowrap shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+              (YOU'RE WELCOME FOR THE AESTHETIC ✨)
+            </span>
+          </div>
         </div>
       </div>
 
